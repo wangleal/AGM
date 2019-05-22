@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AGM</string>
+    <string name="gltextureview">GLTextureView</string>
 </resources>
