@@ -29,6 +29,10 @@ public class GLRenderer {
         this(sharedContext, (Object) surfaceTexture);
     }
 
+    public void queueEvent(Runnable runnable){
+        handler.post(runnable);
+    }
+
     private GLRenderer(EGLContext sharedContext,Object surface){
         rendererThread = new HandlerThread(TAG);
         rendererThread.start();

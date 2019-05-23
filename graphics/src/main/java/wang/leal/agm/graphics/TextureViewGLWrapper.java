@@ -40,24 +40,30 @@ public class TextureViewGLWrapper{
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
             glRenderer = new GLRenderer(surface);
-            if (renderer!=null){
-                renderer.onSurfaceCreated();
-                renderer.onSurfaceChanged(width,height);
-            }
+            glRenderer.queueEvent(()->{
+                if (renderer!=null){
+                    renderer.onSurfaceCreated();
+                    renderer.onSurfaceChanged(width,height);
+                }
+            });
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-            if (renderer!=null){
-                renderer.onSurfaceChanged(width,height);
-            }
+            glRenderer.queueEvent(()->{
+                if (renderer!=null){
+                    renderer.onSurfaceChanged(width,height);
+                }
+            });
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-            if (glRenderer!=null){
-                glRenderer.release();
-            }
+            glRenderer.queueEvent(()->{
+                if (glRenderer!=null){
+                    glRenderer.release();
+                }
+            });
             return true;
         }
 
