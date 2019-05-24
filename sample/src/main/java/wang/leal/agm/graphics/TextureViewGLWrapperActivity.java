@@ -3,6 +3,7 @@ package wang.leal.agm.graphics;
 import android.graphics.Outline;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 
@@ -11,22 +12,30 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import wang.leal.agm.R;
 
-public class GLTextureViewActivity extends AppCompatActivity {
-    private CameraGLTextureRender cameraRender;
+public class TextureViewGLWrapperActivity extends AppCompatActivity {
+
+    private CameraWrapperTextureRender cameraRender;
+    private TextureViewGLWrapper textureViewGLWrapper;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_gl_texture);
+        setContentView(R.layout.activity_wrapper_texture);
         initView();
     }
 
     private void initView(){
-        GLTextureView textureView = findViewById(R.id.tv_gl_texture);
+        TextureView textureView = findViewById(R.id.tv_gl_texture);
         textureView.setOutlineProvider(new TextureVideoViewOutlineProvider(20));
         textureView.setClipToOutline(true);
-        cameraRender = new CameraGLTextureRender(textureView);
-        cameraRender.start();
+        textureViewGLWrapper = new TextureViewGLWrapper(textureView);
+        cameraRender = new CameraWrapperTextureRender(textureView){
+            @Override
+            protected void requestRender() {
+                textureViewGLWrapper.requestRender();
+            }
+        };
+        textureViewGLWrapper.setRenderer(cameraRender);
     }
 
     @Override
@@ -55,4 +64,5 @@ public class GLTextureViewActivity extends AppCompatActivity {
             outline.setRoundRect(selfRect, mRadius);
         }
     }
+
 }

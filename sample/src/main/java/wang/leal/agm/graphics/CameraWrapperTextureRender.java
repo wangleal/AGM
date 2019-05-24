@@ -9,7 +9,7 @@ import android.view.TextureView;
 import wang.leal.agm.multimedia.camera.Camera1;
 import wang.leal.agm.multimedia.camera.CameraInfo;
 
-public class CameraRender implements TextureViewGLWrapper.Renderer,SurfaceTexture.OnFrameAvailableListener {
+public class CameraWrapperTextureRender implements TextureViewGLWrapper.Renderer,SurfaceTexture.OnFrameAvailableListener {
 
     private Camera1 camera;
     private SurfaceTexture surfaceTexture;
@@ -22,7 +22,7 @@ public class CameraRender implements TextureViewGLWrapper.Renderer,SurfaceTextur
     private boolean isCameraSuccess = true;
     private TextureView textureView;
 
-    public CameraRender(TextureView textureView) {
+    public CameraWrapperTextureRender(TextureView textureView) {
         this.textureView = textureView;
         this.camera = new Camera1();
     }
