@@ -21,5 +21,6 @@
         </activity>
         <activity android:name=".graphics.TextureViewGLWrapperActivity" />
         <activity android:name=".graphics.GLTextureViewActivity" />
+        <activity android:name=".graphics.SurfaceViewGLWrapperActivity" />
     </application>
 </manifest>
