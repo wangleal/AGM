@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import wang.leal.agm.R;
-import wang.leal.agm.graphics.SurfaceViewGLWrapperActivity;
+import wang.leal.agm.ffmpeg.FFmpegActivity;
 
 public class SampleActivity extends AppCompatActivity {
 
@@ -19,6 +19,6 @@ public class SampleActivity extends AppCompatActivity {
     }
 
     private void initView(){
-        findViewById(R.id.bt_gl_texture).setOnClickListener(v->startActivity(new Intent(this, SurfaceViewGLWrapperActivity.class)));
+        findViewById(R.id.bt_ffmpeg).setOnClickListener(v->startActivity(new Intent(this, FFmpegActivity.class)));
     }
 }

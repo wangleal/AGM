@@ -5,13 +5,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Button
-        android:id="@+id/bt_gl_texture"
+        android:id="@+id/bt_ffmpeg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:text="@string/gltextureview"/>
+        android:text="@string/ffmpeg"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -33,4 +33,5 @@ dependencies {
 
     implementation project(':graphics')
     implementation project(':multimedia')
+    implementation project(':ffmpeg')
 }

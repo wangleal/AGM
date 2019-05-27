@@ -11,7 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:fullBackupContent="false"
-        android:theme="@style/Theme.AppCompat.NoActionBar">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".sample.SampleActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -22,5 +22,6 @@
         <activity android:name=".graphics.TextureViewGLWrapperActivity" />
         <activity android:name=".graphics.GLTextureViewActivity" />
         <activity android:name=".graphics.SurfaceViewGLWrapperActivity" />
+        <activity android:name=".ffmpeg.FFmpegActivity" />
     </application>
 </manifest>

@@ -9,6 +9,6 @@
 1. 通用的EGLRenderer     **DONE**<br>
 1. 通用的GLES 功能封装<br>
 1. Camera1和Camera2抽取<br>
-1. FFmepg<br>
+1. ffmpeg编译可执行文件<br>
 1. WebRTC<br>
 1. WebRTC janus http<br>
