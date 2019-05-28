@@ -9,7 +9,7 @@ add_library(ffmpeg
         src/main/jni/cmdutils.c
         src/main/jni/ffmpeg.h
         src/main/jni/ffmpeg.c
-        src/main/jni/ffmpeg_4.1.3.c
+        src/main/jni/ffmpeg_4.1.3.cpp
         src/main/jni/ffmpeg_opt.c
         src/main/jni/ffmpeg_hw.c
         src/main/jni/ffmpeg_filter.c)
