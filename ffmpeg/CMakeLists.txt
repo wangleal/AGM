@@ -5,7 +5,14 @@ find_library(android-lib android)
 
 add_library(ffmpeg
             SHARED
-            src/main/cpp/ffmpeg.cpp )
+        src/main/jni/cmdutils.h
+        src/main/jni/cmdutils.c
+        src/main/jni/ffmpeg.h
+        src/main/jni/ffmpeg.c
+        src/main/jni/ffmpeg_4.1.3.c
+        src/main/jni/ffmpeg_opt.c
+        src/main/jni/ffmpeg_hw.c
+        src/main/jni/ffmpeg_filter.c)
 
 set(JNI_LIBS_DIR ${CMAKE_SOURCE_DIR}/src/main/jniLibs)
 
@@ -15,6 +22,13 @@ add_library(avutil
 set_target_properties(avutil
                       PROPERTIES IMPORTED_LOCATION
                       ${JNI_LIBS_DIR}/armeabi-v7a/libavutil.so )
+
+add_library(avdevice
+        SHARED
+        IMPORTED )
+set_target_properties(avdevice
+        PROPERTIES IMPORTED_LOCATION
+        ${JNI_LIBS_DIR}/armeabi-v7a/libavdevice.so )
 
 add_library(swresample
             SHARED

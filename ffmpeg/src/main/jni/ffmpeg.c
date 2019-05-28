@@ -636,6 +636,12 @@ static void ffmpeg_cleanup(int ret)
     }
     term_exit();
     ffmpeg_exited = 1;
+
+    nb_filtergraphs = 0;
+    nb_output_files = 0;
+    nb_output_streams = 0;
+    nb_input_files = 0;
+    nb_input_streams = 0;
 }
 
 void remove_avoptions(AVDictionary **a, AVDictionary *b)
@@ -4866,48 +4872,51 @@ static void log_callback_null(void *ptr, int level, const char *fmt, va_list vl)
 int execute(int argc, char **argv)
 {
     int i, ret;
+    LOGE("argCmd=%s","execute step 1");
     BenchmarkTimeStamps ti;
 
     init_dynload();
-
+    LOGE("argCmd=%s","execute step 2");
     register_exit(ffmpeg_cleanup);
-
+    LOGE("argCmd=%s","execute step 3");
     setvbuf(stderr,NULL,_IONBF,0); /* win32 runtime needs this */
-
+    LOGE("argCmd=%s","execute step 4");
     av_log_set_flags(AV_LOG_SKIP_REPEATED);
     parse_loglevel(argc, argv, options);
-
+    LOGE("argCmd=%s","execute step 5");
     if(argc>1 && !strcmp(argv[1], "-d")){
         run_as_daemon=1;
         av_log_set_callback(log_callback_null);
         argc--;
         argv++;
     }
-
+    LOGE("argCmd=%s","execute step 6");
 #if CONFIG_AVDEVICE
-    avdevice_register_all();
+//    avdevice_register_all();
 #endif
+    LOGE("argCmd=%s","execute step 7");
     avformat_network_init();
-
+    LOGE("argCmd=%s","execute step 8");
     show_banner(argc, argv, options);
-
+    LOGE("argCmd=%s","execute step 9");
     /* parse options and open all input/output files */
     ret = ffmpeg_parse_options(argc, argv);
+    LOGE("argCmd=%s","execute step 10");
     if (ret < 0)
         exit_program(1);
-
+    LOGE("argCmd=%s","execute step 11");
     if (nb_output_files <= 0 && nb_input_files == 0) {
         show_usage();
         av_log(NULL, AV_LOG_WARNING, "Use -h to get full help or, even better, run 'man %s'\n", program_name);
         exit_program(1);
     }
-
+    LOGE("argCmd=%s","execute step 12");
     /* file converter / grab */
     if (nb_output_files <= 0) {
         av_log(NULL, AV_LOG_FATAL, "At least one output file must be specified\n");
         exit_program(1);
     }
-
+    LOGE("argCmd=%s","execute step 13");
 //     if (nb_input_files == 0) {
 //         av_log(NULL, AV_LOG_FATAL, "At least one input file must be specified\n");
 //         exit_program(1);
@@ -4917,7 +4926,7 @@ int execute(int argc, char **argv)
         if (strcmp(output_files[i]->ctx->oformat->name, "rtp"))
             want_sdp = 0;
     }
-
+    LOGE("argCmd=%s","execute step 14");
     current_time = ti = get_benchmark_time_stamps();
     if (transcode() < 0)
         exit_program(1);
@@ -4935,7 +4944,21 @@ int execute(int argc, char **argv)
            decode_error_stat[0], decode_error_stat[1]);
     if ((decode_error_stat[0] + decode_error_stat[1]) * max_error_rate < decode_error_stat[1])
         exit_program(69);
+    LOGE("argCmd=%s","execute step 15");
+//    exit_program(received_nb_signals ? 255 : main_return_code);
 
-    exit_program(received_nb_signals ? 255 : main_return_code);
+    nb_filtergraphs = 0;
+    progress_avio = NULL;
+
+    input_streams = NULL;
+    nb_input_streams = 0;
+    input_files = NULL;
+    nb_input_files = 0;
+
+    output_streams = NULL;
+    nb_output_streams = 0;
+    output_files = NULL;
+    nb_output_files = 0;
+
     return main_return_code;
 }

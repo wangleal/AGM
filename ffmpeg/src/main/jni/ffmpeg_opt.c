@@ -19,6 +19,7 @@
  */
 
 #include <stdint.h>
+#include <android/log.h>
 
 #include "ffmpeg.h"
 #include "cmdutils.h"
@@ -40,6 +41,8 @@
 #include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/pixfmt.h"
+
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , "ffmpeg_opt.c", __VA_ARGS__)
 
 #define DEFAULT_PASS_LOGFILENAME_PREFIX "ffmpeg2pass"
 
@@ -2095,7 +2098,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
         o->stop_time = INT64_MAX;
         av_log(NULL, AV_LOG_WARNING, "-t and -to cannot be used together; using -t.\n");
     }
-
+    LOGE("open output_file 1");
     if (o->stop_time != INT64_MAX && o->recording_time == INT64_MAX) {
         int64_t start_time = o->start_time == AV_NOPTS_VALUE ? 0 : o->start_time;
         if (o->stop_time <= start_time) {
@@ -2105,20 +2108,20 @@ static int open_output_file(OptionsContext *o, const char *filename)
             o->recording_time = o->stop_time - start_time;
         }
     }
-
+    LOGE("open output_file 2");
     GROW_ARRAY(output_files, nb_output_files);
     of = av_mallocz(sizeof(*of));
     if (!of)
         exit_program(1);
     output_files[nb_output_files - 1] = of;
-
+    LOGE("open output_file 3");
     of->ost_index      = nb_output_streams;
     of->recording_time = o->recording_time;
     of->start_time     = o->start_time;
     of->limit_filesize = o->limit_filesize;
     of->shortest       = o->shortest;
     av_dict_copy(&of->opts, o->g->format_opts, 0);
-
+    LOGE("open output_file 4");
     if (!strcmp(filename, "-"))
         filename = "pipe:";
 
@@ -2127,7 +2130,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
         print_error(filename, err);
         exit_program(1);
     }
-
+    LOGE("open output_file 5");
     of->ctx = oc;
     if (o->recording_time != INT64_MAX)
         oc->duration = o->recording_time;
@@ -2143,7 +2146,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
         format_flags |= AVFMT_FLAG_BITEXACT;
         oc->flags    |= AVFMT_FLAG_BITEXACT;
     }
-
+    LOGE("open output_file 6");
     /* create streams for all unlabeled output pads */
     for (i = 0; i < nb_filtergraphs; i++) {
         FilterGraph *fg = filtergraphs[i];
@@ -2161,7 +2164,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
             init_output_filter(ofilter, o, oc);
         }
     }
-
+    LOGE("open output_file 7");
     if (!o->nb_stream_maps) {
         char *subtitle_codec_name = NULL;
         /* pick the "best" stream of each type */
@@ -2507,11 +2510,12 @@ loop_end:
                "No input streams but output needs an input stream\n");
         exit_program(1);
     }
-
+    LOGE("open output_file 8");
     if (!(oc->oformat->flags & AVFMT_NOFILE)) {
         /* test if it already exists to avoid losing precious files */
+        LOGE("open output_file 10 %s",filename);
         assert_file_overwrite(filename);
-
+        LOGE("open output_file 11");
         /* open the file */
         if ((err = avio_open2(&oc->pb, filename, AVIO_FLAG_WRITE,
                               &oc->interrupt_callback,
@@ -2519,9 +2523,10 @@ loop_end:
             print_error(filename, err);
             exit_program(1);
         }
+        LOGE("open output_file 12");
     } else if (strcmp(oc->oformat->name, "image2")==0 && !av_filename_number_test(filename))
         assert_file_overwrite(filename);
-
+    LOGE("open output_file 9");
     if (o->mux_preload) {
         av_dict_set_int(&of->opts, "preload", o->mux_preload*AV_TIME_BASE, 0);
     }
@@ -3215,8 +3220,8 @@ static const OptionGroupDef groups[] = {
 static int open_files(OptionGroupList *l, const char *inout,
                       int (*open_file)(OptionsContext*, const char*))
 {
+    LOGE("Opening an %s file group number : %d.\n", inout, l->nb_groups);
     int i, ret;
-
     for (i = 0; i < l->nb_groups; i++) {
         OptionGroup *g = &l->groups[i];
         OptionsContext o;
@@ -3232,7 +3237,9 @@ static int open_files(OptionGroupList *l, const char *inout,
         }
 
         av_log(NULL, AV_LOG_DEBUG, "Opening an %s file: %s.\n", inout, g->arg);
+        LOGE("Opening an %s file: %s.\n", inout, g->arg);
         ret = open_file(&o, g->arg);
+        LOGE("Opening file success");
         uninit_options(&o);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error opening %s file %s.\n",
@@ -3267,31 +3274,32 @@ int ffmpeg_parse_options(int argc, char **argv)
         av_log(NULL, AV_LOG_FATAL, "Error parsing global options: ");
         goto fail;
     }
-
+    LOGE("parse:%s","parse step 1");
     /* configure terminal and setup signal handlers */
     term_init();
-
+    LOGE("parse:%s","parse step 2");
     /* open input files */
     ret = open_files(&octx.groups[GROUP_INFILE], "input", open_input_file);
     if (ret < 0) {
         av_log(NULL, AV_LOG_FATAL, "Error opening input files: ");
         goto fail;
     }
-
+    LOGE("parse:%s","parse step 3");
     /* create the complex filtergraphs */
     ret = init_complex_filters();
     if (ret < 0) {
         av_log(NULL, AV_LOG_FATAL, "Error initializing complex filters.\n");
         goto fail;
     }
-
+    LOGE("parse:%s","parse step 4");
     /* open output files */
     ret = open_files(&octx.groups[GROUP_OUTFILE], "output", open_output_file);
+    LOGE("parse:%s","parse step 5");
     if (ret < 0) {
         av_log(NULL, AV_LOG_FATAL, "Error opening output files: ");
         goto fail;
     }
-
+    LOGE("parse:%s","parse step 6");
     check_filter_outputs();
 
 fail:

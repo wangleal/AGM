@@ -135,10 +135,10 @@ void register_exit(void (*cb)(int ret))
 
 void exit_program(int ret)
 {
-    if (program_exit)
-        program_exit(ret);
-
-    exit(ret);
+//    if (program_exit)
+//        program_exit(ret);
+//
+//    exit(ret);
 }
 
 double parse_number_or_die(const char *context, const char *numstr, int type,
@@ -1129,12 +1129,12 @@ static void print_all_libs_info(int flags, int level)
     PRINT_LIB_INFO(avutil,     AVUTIL,     flags, level);
     PRINT_LIB_INFO(avcodec,    AVCODEC,    flags, level);
     PRINT_LIB_INFO(avformat,   AVFORMAT,   flags, level);
-    PRINT_LIB_INFO(avdevice,   AVDEVICE,   flags, level);
+//    PRINT_LIB_INFO(avdevice,   AVDEVICE,   flags, level);
     PRINT_LIB_INFO(avfilter,   AVFILTER,   flags, level);
-    PRINT_LIB_INFO(avresample, AVRESAMPLE, flags, level);
+//    PRINT_LIB_INFO(avresample, AVRESAMPLE, flags, level);
     PRINT_LIB_INFO(swscale,    SWSCALE,    flags, level);
     PRINT_LIB_INFO(swresample, SWRESAMPLE, flags, level);
-    PRINT_LIB_INFO(postproc,   POSTPROC,   flags, level);
+//    PRINT_LIB_INFO(postproc,   POSTPROC,   flags, level);
 }
 
 static void print_program_info(int flags, int level)
@@ -2192,65 +2192,65 @@ double get_rotation(AVStream *st)
 }
 
 #if CONFIG_AVDEVICE
-static int print_device_sources(AVInputFormat *fmt, AVDictionary *opts)
-{
-    int ret, i;
-    AVDeviceInfoList *device_list = NULL;
-
-    if (!fmt || !fmt->priv_class  || !AV_IS_INPUT_DEVICE(fmt->priv_class->category))
-        return AVERROR(EINVAL);
-
-    printf("Auto-detected sources for %s:\n", fmt->name);
-    if (!fmt->get_device_list) {
-        ret = AVERROR(ENOSYS);
-        printf("Cannot list sources. Not implemented.\n");
-        goto fail;
-    }
-
-    if ((ret = avdevice_list_input_sources(fmt, NULL, opts, &device_list)) < 0) {
-        printf("Cannot list sources.\n");
-        goto fail;
-    }
-
-    for (i = 0; i < device_list->nb_devices; i++) {
-        printf("%s %s [%s]\n", device_list->default_device == i ? "*" : " ",
-               device_list->devices[i]->device_name, device_list->devices[i]->device_description);
-    }
-
-  fail:
-    avdevice_free_list_devices(&device_list);
-    return ret;
-}
-
-static int print_device_sinks(AVOutputFormat *fmt, AVDictionary *opts)
-{
-    int ret, i;
-    AVDeviceInfoList *device_list = NULL;
-
-    if (!fmt || !fmt->priv_class  || !AV_IS_OUTPUT_DEVICE(fmt->priv_class->category))
-        return AVERROR(EINVAL);
-
-    printf("Auto-detected sinks for %s:\n", fmt->name);
-    if (!fmt->get_device_list) {
-        ret = AVERROR(ENOSYS);
-        printf("Cannot list sinks. Not implemented.\n");
-        goto fail;
-    }
-
-    if ((ret = avdevice_list_output_sinks(fmt, NULL, opts, &device_list)) < 0) {
-        printf("Cannot list sinks.\n");
-        goto fail;
-    }
-
-    for (i = 0; i < device_list->nb_devices; i++) {
-        printf("%s %s [%s]\n", device_list->default_device == i ? "*" : " ",
-               device_list->devices[i]->device_name, device_list->devices[i]->device_description);
-    }
-
-  fail:
-    avdevice_free_list_devices(&device_list);
-    return ret;
-}
+//static int print_device_sources(AVInputFormat *fmt, AVDictionary *opts)
+//{
+//    int ret, i;
+//    AVDeviceInfoList *device_list = NULL;
+//
+//    if (!fmt || !fmt->priv_class  || !AV_IS_INPUT_DEVICE(fmt->priv_class->category))
+//        return AVERROR(EINVAL);
+//
+//    printf("Auto-detected sources for %s:\n", fmt->name);
+//    if (!fmt->get_device_list) {
+//        ret = AVERROR(ENOSYS);
+//        printf("Cannot list sources. Not implemented.\n");
+//        goto fail;
+//    }
+//
+//    if ((ret = avdevice_list_input_sources(fmt, NULL, opts, &device_list)) < 0) {
+//        printf("Cannot list sources.\n");
+//        goto fail;
+//    }
+//
+//    for (i = 0; i < device_list->nb_devices; i++) {
+//        printf("%s %s [%s]\n", device_list->default_device == i ? "*" : " ",
+//               device_list->devices[i]->device_name, device_list->devices[i]->device_description);
+//    }
+//
+//  fail:
+//    avdevice_free_list_devices(&device_list);
+//    return ret;
+//}
+//
+//static int print_device_sinks(AVOutputFormat *fmt, AVDictionary *opts)
+//{
+//    int ret, i;
+//    AVDeviceInfoList *device_list = NULL;
+//
+//    if (!fmt || !fmt->priv_class  || !AV_IS_OUTPUT_DEVICE(fmt->priv_class->category))
+//        return AVERROR(EINVAL);
+//
+//    printf("Auto-detected sinks for %s:\n", fmt->name);
+//    if (!fmt->get_device_list) {
+//        ret = AVERROR(ENOSYS);
+//        printf("Cannot list sinks. Not implemented.\n");
+//        goto fail;
+//    }
+//
+//    if ((ret = avdevice_list_output_sinks(fmt, NULL, opts, &device_list)) < 0) {
+//        printf("Cannot list sinks.\n");
+//        goto fail;
+//    }
+//
+//    for (i = 0; i < device_list->nb_devices; i++) {
+//        printf("%s %s [%s]\n", device_list->default_device == i ? "*" : " ",
+//               device_list->devices[i]->device_name, device_list->devices[i]->device_description);
+//    }
+//
+//  fail:
+//    avdevice_free_list_devices(&device_list);
+//    return ret;
+//}
 
 static int show_sinks_sources_parse_arg(const char *arg, char **dev, AVDictionary **opts)
 {
@@ -2276,76 +2276,78 @@ static int show_sinks_sources_parse_arg(const char *arg, char **dev, AVDictionar
 
 int show_sources(void *optctx, const char *opt, const char *arg)
 {
-    AVInputFormat *fmt = NULL;
-    char *dev = NULL;
-    AVDictionary *opts = NULL;
-    int ret = 0;
-    int error_level = av_log_get_level();
-
-    av_log_set_level(AV_LOG_ERROR);
-
-    if ((ret = show_sinks_sources_parse_arg(arg, &dev, &opts)) < 0)
-        goto fail;
-
-    do {
-        fmt = av_input_audio_device_next(fmt);
-        if (fmt) {
-            if (!strcmp(fmt->name, "lavfi"))
-                continue; //it's pointless to probe lavfi
-            if (dev && !av_match_name(dev, fmt->name))
-                continue;
-            print_device_sources(fmt, opts);
-        }
-    } while (fmt);
-    do {
-        fmt = av_input_video_device_next(fmt);
-        if (fmt) {
-            if (dev && !av_match_name(dev, fmt->name))
-                continue;
-            print_device_sources(fmt, opts);
-        }
-    } while (fmt);
-  fail:
-    av_dict_free(&opts);
-    av_free(dev);
-    av_log_set_level(error_level);
-    return ret;
+//    AVInputFormat *fmt = NULL;
+//    char *dev = NULL;
+//    AVDictionary *opts = NULL;
+//    int ret = 0;
+//    int error_level = av_log_get_level();
+//
+//    av_log_set_level(AV_LOG_ERROR);
+//
+//    if ((ret = show_sinks_sources_parse_arg(arg, &dev, &opts)) < 0)
+//        goto fail;
+//
+//    do {
+//        fmt = av_input_audio_device_next(fmt);
+//        if (fmt) {
+//            if (!strcmp(fmt->name, "lavfi"))
+//                continue; //it's pointless to probe lavfi
+//            if (dev && !av_match_name(dev, fmt->name))
+//                continue;
+//            print_device_sources(fmt, opts);
+//        }
+//    } while (fmt);
+//    do {
+//        fmt = av_input_video_device_next(fmt);
+//        if (fmt) {
+//            if (dev && !av_match_name(dev, fmt->name))
+//                continue;
+//            print_device_sources(fmt, opts);
+//        }
+//    } while (fmt);
+//  fail:
+//    av_dict_free(&opts);
+//    av_free(dev);
+//    av_log_set_level(error_level);
+//    return ret;
+    return 0;
 }
 
 int show_sinks(void *optctx, const char *opt, const char *arg)
 {
-    AVOutputFormat *fmt = NULL;
-    char *dev = NULL;
-    AVDictionary *opts = NULL;
-    int ret = 0;
-    int error_level = av_log_get_level();
-
-    av_log_set_level(AV_LOG_ERROR);
-
-    if ((ret = show_sinks_sources_parse_arg(arg, &dev, &opts)) < 0)
-        goto fail;
-
-    do {
-        fmt = av_output_audio_device_next(fmt);
-        if (fmt) {
-            if (dev && !av_match_name(dev, fmt->name))
-                continue;
-            print_device_sinks(fmt, opts);
-        }
-    } while (fmt);
-    do {
-        fmt = av_output_video_device_next(fmt);
-        if (fmt) {
-            if (dev && !av_match_name(dev, fmt->name))
-                continue;
-            print_device_sinks(fmt, opts);
-        }
-    } while (fmt);
-  fail:
-    av_dict_free(&opts);
-    av_free(dev);
-    av_log_set_level(error_level);
-    return ret;
+//    AVOutputFormat *fmt = NULL;
+//    char *dev = NULL;
+//    AVDictionary *opts = NULL;
+//    int ret = 0;
+//    int error_level = av_log_get_level();
+//
+//    av_log_set_level(AV_LOG_ERROR);
+//
+//    if ((ret = show_sinks_sources_parse_arg(arg, &dev, &opts)) < 0)
+//        goto fail;
+//
+//    do {
+//        fmt = av_output_audio_device_next(fmt);
+//        if (fmt) {
+//            if (dev && !av_match_name(dev, fmt->name))
+//                continue;
+//            print_device_sinks(fmt, opts);
+//        }
+//    } while (fmt);
+//    do {
+//        fmt = av_output_video_device_next(fmt);
+//        if (fmt) {
+//            if (dev && !av_match_name(dev, fmt->name))
+//                continue;
+//            print_device_sinks(fmt, opts);
+//        }
+//    } while (fmt);
+//  fail:
+//    av_dict_free(&opts);
+//    av_free(dev);
+//    av_log_set_level(error_level);
+//    return ret;
+    return 0;
 }
 
 #endif
