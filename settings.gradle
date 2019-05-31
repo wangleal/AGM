@@ -1,2 +1,2 @@
-include ':graphics', ':multimedia', ':ffmpeg'
+include ':graphics', ':multimedia', ':ffmpeg', ':webrtc'
 include ':sample'
