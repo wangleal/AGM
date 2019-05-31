@@ -5,7 +5,7 @@ find_library(android-lib android)
 
 add_library(ffmpeg
             SHARED
-            src/main/cpp/ffmpeg.cpp )
+            src/main/jni/ffmpeg.cpp )
 
 set(JNI_LIBS_DIR ${CMAKE_SOURCE_DIR}/src/main/jniLibs)
 
