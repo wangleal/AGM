@@ -4,7 +4,7 @@ ext{
 
     publishedGroupId = 'wang.leal.agm'
     artifact = 'webrtc'
-    libraryVersion = '0.0.1'
+    libraryVersion = '0.0.2'
 
     libraryName = 'webrtc'
     libraryDescription = 'The webrtc library base on 22746.'
