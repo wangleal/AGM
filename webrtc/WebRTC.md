@@ -4,7 +4,7 @@
 
 #### version 获取规则
 1，进入下载的webrtc android源码目录的src路径（~/webrtc/src/）。
-2，执行git命令 “git rev-list --all --count”，得到的即是branch名称。
+2，执行git命令 “git log -1 | grep 'Cr-Commit-Position: refs/heads/master@{#' | egrep -o "[0-9]+}" | tr -d '}'”，得到的即是branch名称。
 
 #### version
-WebRTC version：22746
+WebRTC version：27606
