@@ -235,10 +235,7 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
     return (name.startsWith(QCOM_PREFIX) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
         // Exynos H264 encoder is supported in LOLLIPOP or later.
         || (name.startsWith(EXYNOS_PREFIX)
-               && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            ||(name.startsWith(MediaCodecUtils.IMG_PREFIX))
-            ||(name.startsWith(MediaCodecUtils.K3_PREFIX))
-            ||(name.startsWith(MediaCodecUtils.HISI_PREFIX));
+               && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
   }
 
   private boolean isMediaCodecAllowed(MediaCodecInfo info) {

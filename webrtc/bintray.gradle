@@ -4,10 +4,10 @@ ext{
 
     publishedGroupId = 'wang.leal.agm'
     artifact = 'webrtc'
-    libraryVersion = '0.0.2'
+    libraryVersion = '1.0.28296'
 
     libraryName = 'webrtc'
-    libraryDescription = 'The webrtc library base on 22746.'
+    libraryDescription = 'The webrtc library base on 28296.'
     siteUrl = 'https://github.com/wangleal/AGM'
     gitUrl = 'https://github.com/wangleal/AGM.git'
 
