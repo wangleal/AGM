@@ -47,6 +47,10 @@ public class DefaultVideoDecoderFactory implements VideoDecoderFactory {
       softwareDecoder = platformSoftwareVideoDecoderFactory.createDecoder(codecType);
     }
     if (hardwareDecoder != null && softwareDecoder != null) {
+      // MTK use software.
+      if (hardwareDecoder.getImplementationName().startsWith(MediaCodecUtils.MTK_PREFIX)){
+        return softwareDecoder;
+      }
       // Both hardware and software supported, wrap it in a software fallback
       return new VideoDecoderFallback(
           /* fallback= */ softwareDecoder, /* primary= */ hardwareDecoder);
