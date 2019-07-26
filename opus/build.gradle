@@ -33,3 +33,5 @@ dependencies {
 
     api 'top.oply.opuslib:opuslib:1.0.2'
 }
+
+apply from: 'bintray.gradle'
