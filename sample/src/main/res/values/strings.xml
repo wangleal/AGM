@@ -3,4 +3,9 @@
     <string name="gltextureview">GLTextureView</string>
     <string name="ffmpeg">FFmpeg</string>
     <string name="execute">execute</string>
+    <string name="opus">opus</string>
+    <string name="play">play</string>
+    <string name="stop">stop</string>
+    <string name="record">record</string>
+    <string name="stop_record">stop_record</string>
 </resources>

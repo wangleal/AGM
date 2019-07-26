@@ -2,6 +2,9 @@
         package="wang.leal.agm">
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
     <uses-feature android:name="android.hardware.camera" android:required="true"/>
 
@@ -23,5 +26,6 @@
         <activity android:name=".graphics.GLTextureViewActivity" />
         <activity android:name=".graphics.SurfaceViewGLWrapperActivity" />
         <activity android:name=".ffmpeg.FFmpegActivity" />
+        <activity android:name=".opus.OpusActivity" />
     </application>
 </manifest>
