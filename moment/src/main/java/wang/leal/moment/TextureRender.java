@@ -18,6 +18,7 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
 
     private GLRenderer glRenderer;
     private Camera camera;
+    private android.hardware.Camera hardCamera;
     private SurfaceTexture surfaceTexture;
     private GLFBOCamera glCamera;
     private GLFBO2DCamera gl2dCamera;
@@ -171,12 +172,29 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
             return;
         }
         camera.startPreview(surfaceTexture, (byte[] data, android.hardware.Camera camera) -> {
+            this.hardCamera = camera;
             camera.addCallbackBuffer(data);
             if (isSwitch) {
                 isSwitch = false;
                 requestRender();
             }
         });
+    }
+
+    public void handleZoom(boolean isZoomIn) {
+        if (hardCamera==null)return;
+        android.hardware.Camera.Parameters params = hardCamera.getParameters();
+        if (params.isZoomSupported()) {
+            int maxZoom = params.getMaxZoom();
+            int zoom = params.getZoom();
+            if (isZoomIn && zoom < maxZoom) {
+                zoom++;
+            } else if (zoom > 0) {
+                zoom--;
+            }
+            params.setZoom(zoom);
+            hardCamera.setParameters(params);
+        }
     }
 
     public synchronized void release() {
