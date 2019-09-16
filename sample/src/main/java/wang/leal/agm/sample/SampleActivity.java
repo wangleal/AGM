@@ -7,8 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import wang.leal.agm.R;
-import wang.leal.agm.ffmpeg.FFmpegActivity;
-import wang.leal.agm.opus.OpusActivity;
+import wang.leal.agm.moment.MomentActivity;
 
 public class SampleActivity extends AppCompatActivity {
 
@@ -20,7 +19,8 @@ public class SampleActivity extends AppCompatActivity {
     }
 
     private void initView(){
-        findViewById(R.id.bt_ffmpeg).setOnClickListener(v->startActivity(new Intent(this, FFmpegActivity.class)));
-        findViewById(R.id.bt_opus).setOnClickListener(v->startActivity(new Intent(this, OpusActivity.class)));
+//        findViewById(R.id.bt_ffmpeg).setOnClickListener(v->startActivity(new Intent(this, FFmpegActivity.class)));
+//        findViewById(R.id.bt_opus).setOnClickListener(v->startActivity(new Intent(this, OpusActivity.class)));
+        findViewById(R.id.bt_moment).setOnClickListener(v -> startActivity(new Intent(this, MomentActivity.class)));
     }
 }
