@@ -135,6 +135,12 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
         }
     }
 
+    public void tackPhoto(){
+        if (camera!=null){
+            camera.tackPhoto();
+        }
+    }
+
     private void openFrontCamera() {
         try {
             camera.openFront(textureView.getHeight(), textureView.getWidth(), 24);

@@ -1,6 +1,14 @@
 package wang.leal.moment.camera;
 
+import android.content.Intent;
+import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
+import android.net.Uri;
+import android.os.Environment;
+import android.os.StatFs;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 /**
  * Camera {@link android.hardware.Camera}
@@ -60,6 +68,54 @@ public class Camera {
             currentCameraInfo = backCameraInfo;
         }
         camera.setParameters(parameters);
+    }
+
+    public void tackPhoto(){
+        if (camera!=null){
+            camera.takePicture(null, null, new android.hardware.Camera.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] data, android.hardware.Camera camera) {
+                    android.hardware.Camera.Parameters ps = camera.getParameters();
+                    if(ps.getPictureFormat() == PixelFormat.JPEG){
+                        //存储拍照获得的图片
+                        String path = save(data);
+                        //将图片交给Image程序处理
+                        Uri uri = Uri.fromFile(new File(path));
+                        Intent intent = new Intent();
+                        intent.setAction("android.intent.action.VIEW");
+                        intent.setDataAndType(uri, "image/jpeg");
+                    }
+                }
+            });
+        }
+    }
+
+    private String save(byte[] data){
+        String path = "/sdcard/"+System.currentTimeMillis()+".jpg";
+        try {
+            //判断是否装有SD卡
+            if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+                //判断SD卡上是否有足够的空间
+                String storage = Environment.getExternalStorageDirectory().toString();
+                StatFs fs = new StatFs(storage);
+                long available = fs.getAvailableBlocks()*fs.getBlockSize();
+                if(available<data.length){
+                    //空间不足直接返回空
+                    return null;
+                }
+                File file = new File(path);
+                if(!file.exists())
+                    //创建文件
+                    file.createNewFile();
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(data);
+                fos.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return path;
     }
 
     /**

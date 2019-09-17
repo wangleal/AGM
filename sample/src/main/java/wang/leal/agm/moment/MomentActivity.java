@@ -62,6 +62,19 @@ public class MomentActivity extends AppCompatActivity {
         }else {
             cameraView.startCamera();
         }
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        1001);
+
+            }
+        }
     }
 
     @Override
@@ -77,6 +90,12 @@ public class MomentActivity extends AppCompatActivity {
             }
             break;
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
     }
 
     @Override
