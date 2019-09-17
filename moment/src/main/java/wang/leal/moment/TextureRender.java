@@ -5,6 +5,9 @@ import android.opengl.EGL14;
 import android.opengl.EGLContext;
 import android.view.TextureView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import wang.leal.moment.camera.Camera;
 import wang.leal.moment.camera.CameraInfo;
 import wang.leal.moment.gl.GL2DTextureHelper;
@@ -28,6 +31,7 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
     private EGLContext eglContext;
     private boolean isCameraSuccess = true;
     private TextureView textureView;
+    private List<Callback> callbacks = new ArrayList<>();
 
     TextureRender(TextureView textureView) {
         this.textureView = textureView;
@@ -72,10 +76,7 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
         glfbo2DTexture = new GLFBO2DTexture();
         glfbo2DTexture.create();
         openFrontCamera();
-    }
-
-    public EGLContext getEglContext(){
-        return eglContext;
+        callbackOnCreate();
     }
 
     private void onSurfaceChanged(int width, int height) {
@@ -101,6 +102,11 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
         if (glfbo2DTexture != null) {
             glfbo2DTexture.sizeChanged(width, height);
         }
+        callbackOnSizeChange(width, height);
+    }
+
+    public EGLContext getEglContext(){
+        return eglContext;
     }
 
     private void onDrawFrame() {
@@ -116,6 +122,9 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
             glCamera.draw(texture);
             texture = glCamera.getTextureId();
         }
+        if (surfaceTexture != null) {
+            texture = callbackOnDraw(texture, surfaceTexture.getTimestamp());
+        }
         if (gl2dHelper != null) {
             gl2dHelper.draw(texture);
         }
@@ -123,7 +132,7 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
 
     private boolean isSwitch = false;
 
-    public void switchCamera() {
+    void switchCamera() {
         isSwitch = true;
         CameraInfo currentCameraInfo = camera.getCameraInfo();
         if (currentCameraInfo != null) {
@@ -135,7 +144,7 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
         }
     }
 
-    public void tackPhoto(){
+    void tackPhoto(){
         if (camera!=null){
             camera.tackPhoto();
         }
@@ -187,7 +196,7 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
         });
     }
 
-    public void handleZoom(boolean isZoomIn) {
+    void handleZoom(boolean isZoomIn) {
         if (hardCamera==null)return;
         android.hardware.Camera.Parameters params = hardCamera.getParameters();
         if (params.isZoomSupported()) {
@@ -224,6 +233,10 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
             gl2dCamera.release();
             gl2dCamera = null;
         }
+        callbackOnRelease();
+        if (callbacks != null && callbacks.size() > 0) {
+            callbacks.clear();
+        }
     }
 
     private class GLSurfaceTextureListener implements TextureView.SurfaceTextureListener {
@@ -257,6 +270,64 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
         }
+    }
+
+    private synchronized void callbackOnCreate() {
+        if (callbacks != null && callbacks.size() > 0) {
+            for (Callback callback : callbacks) {
+                callback.onCreate();
+            }
+        }
+    }
+
+    private synchronized void callbackOnSizeChange(int width, int height) {
+        if (callbacks != null && callbacks.size() > 0) {
+            for (Callback callback : callbacks) {
+                callback.onSizeChanged(width, height);
+            }
+        }
+    }
+
+    private synchronized int callbackOnDraw(int textureId, long timestamp) {
+        int texture = textureId;
+        if (callbacks != null && callbacks.size() > 0) {
+            for (Callback callback : callbacks) {
+                texture = callback.onDraw(texture, timestamp);
+            }
+        }
+        return texture;
+    }
+
+    private synchronized void callbackOnRelease() {
+        if (callbacks != null && callbacks.size() > 0) {
+            for (Callback callback : callbacks) {
+                callback.onRelease();
+            }
+        }
+    }
+
+    public void addCallback(Callback callback) {
+        if (callbacks != null && callback != null) {
+            callbacks.add(callback);
+        }
+    }
+
+    public synchronized void removeCallback(Callback callback) {
+        if (callback == null) {
+            callbacks.clear();
+        } else {
+            callbacks.remove(callback);
+        }
+    }
+
+    public interface Callback {
+        void onCreate();
+
+        void onSizeChanged(int width, int height);
+
+        int onDraw(int textureId, long timestamp);
+
+        void onRelease();
     }
 
 }

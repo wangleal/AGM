@@ -11,12 +11,16 @@ import android.view.TextureView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import wang.leal.moment.recorder.AudioFormat;
+import wang.leal.moment.recorder.VideoFormat;
+import wang.leal.moment.recorder.VideoRecorder;
 import wang.leal.moment.view.ProgressView;
 
 public class CameraView extends ConstraintLayout {
 
     private TextureRender textureRender;
     private ProgressView progressView;
+    private VideoRecorder videoRecorder;
 
     public CameraView(Context context) {
         super(context);
@@ -37,6 +41,7 @@ public class CameraView extends ConstraintLayout {
         LayoutInflater.from(getContext()).inflate(R.layout.view_moment_camera, this);
         TextureView textureView = findViewById(R.id.texture_camera);
         textureRender = new TextureRender(textureView);
+        videoRecorder = new VideoRecorder(getContext(),textureRender);
         progressView = findViewById(R.id.pv_action);
     }
 
@@ -63,11 +68,17 @@ public class CameraView extends ConstraintLayout {
     private void startRecord() {
         isStartRecord = true;
         Log.e("Moment", "start record");
+        if (videoRecorder!=null){
+            videoRecorder.startRecord(VideoFormat.HW720, AudioFormat.SINGLE_CHANNEL_44100);
+        }
     }
 
     private void stopRecord() {
         isStartRecord = false;
         Log.e("Moment", "stop record");
+        if (videoRecorder!=null){
+            videoRecorder.stopRecord();
+        }
     }
 
     private void tackPhoto() {
