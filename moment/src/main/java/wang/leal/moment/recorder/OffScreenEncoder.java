@@ -4,14 +4,14 @@ import android.opengl.EGLContext;
 import android.os.Handler;
 import android.os.HandlerThread;
 
-import wang.leal.moment.TextureRender;
+import wang.leal.moment.camera.CameraRender;
 import wang.leal.moment.gl.GL2DTextureHelper;
 import wang.leal.moment.gl.GLESUtil;
 import wang.leal.moment.gl.GLFBO2DTexture;
 import wang.leal.moment.gl.grafika.EglCore;
 import wang.leal.moment.gl.grafika.WindowSurface;
 
-public class OffScreenEncoder implements TextureRender.Callback {
+public class OffScreenEncoder implements CameraRender.Callback {
     private static final String TAG = "OffScreenEncoder";
     private VideoEncoder videoEncoder;
     private HandlerThread handlerThread;

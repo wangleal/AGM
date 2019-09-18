@@ -12,10 +12,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import wang.leal.agm.R;
-import wang.leal.moment.CameraView;
+import wang.leal.moment.camera.CameraView;
+import wang.leal.moment.editor.EditorView;
 
 public class MomentActivity extends AppCompatActivity {
     private  CameraView cameraView;
+    private  EditorView editorView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,10 +42,16 @@ public class MomentActivity extends AppCompatActivity {
                 cameraView.switchCamera();
             }
         });
+        editorView = findViewById(R.id.ev_moment_play);
+        cameraView.setCallback(filePath -> {
+            if (editorView!=null){
+                editorView.setVisibility(View.VISIBLE);
+                editorView.startPlay(filePath);
+            }
+        });
     }
 
     private void requestPermission() {
-
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -94,8 +102,15 @@ public class MomentActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-
+        if (editorView.getVisibility()==View.VISIBLE){
+            editorView.stopPlay();
+            editorView.setVisibility(View.GONE);
+            if (cameraView!=null){
+                cameraView.startCamera();
+            }
+        }else {
+            super.onBackPressed();
+        }
     }
 
     @Override

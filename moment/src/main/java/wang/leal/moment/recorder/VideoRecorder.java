@@ -5,7 +5,7 @@ import android.content.Context;
 
 import java.nio.ByteBuffer;
 
-import wang.leal.moment.TextureRender;
+import wang.leal.moment.camera.CameraRender;
 
 public class VideoRecorder implements AudioEncoder.Callback {
 
@@ -14,14 +14,14 @@ public class VideoRecorder implements AudioEncoder.Callback {
     private OffScreenEncoder cameraEncoder;
     private MP4Muxer mp4Muxer;
     private VideoFormat videoFormat;
-    private TextureRender textureRender;
-    public VideoRecorder(Context context, TextureRender textureRender){
-        this.textureRender = textureRender;
+    private CameraRender cameraRender;
+    public VideoRecorder(Context context, CameraRender cameraRender){
+        this.cameraRender = cameraRender;
         micRecorder = new MicRecorder();
         micEncoder = new MicEncoder();
         cameraEncoder = new OffScreenEncoder();
         mp4Muxer = new MP4Muxer(context.getApplicationContext());
-        this.textureRender.addCallback(cameraEncoder);
+        this.cameraRender.addCallback(cameraEncoder);
         micRecorder.addCallback(micEncoder);
         micEncoder.addCallback(this);
         micEncoder.addCallback(mp4Muxer);
@@ -75,9 +75,9 @@ public class VideoRecorder implements AudioEncoder.Callback {
         if (mp4Muxer!=null){
             mp4Muxer.release();
         }
-        if (textureRender!=null){
-            textureRender.removeCallback(null);
-            textureRender.release();
+        if (cameraRender !=null){
+            cameraRender.removeCallback(null);
+            cameraRender.release();
         }
         if (this.callback!=null){
             this.callback = null;
@@ -91,7 +91,7 @@ public class VideoRecorder implements AudioEncoder.Callback {
     @Override
     public void onAudioConfig(ByteBuffer encodeData, BufferInfo bufferInfo) {
         if (!isAudioEncoderStart&&videoFormat!=null){
-            cameraEncoder.start(textureRender.getEglContext(),videoFormat);
+            cameraEncoder.start(cameraRender.getEglContext(),videoFormat);
             isAudioEncoderStart = true;
         }
     }
@@ -99,7 +99,7 @@ public class VideoRecorder implements AudioEncoder.Callback {
     @Override
     public void onAudioPartialFrame(ByteBuffer encodeData, BufferInfo bufferInfo) {
         if (!isAudioEncoderStart&&videoFormat!=null){
-            cameraEncoder.start(textureRender.getEglContext(),videoFormat);
+            cameraEncoder.start(cameraRender.getEglContext(),videoFormat);
             isAudioEncoderStart = true;
         }
     }
@@ -107,7 +107,7 @@ public class VideoRecorder implements AudioEncoder.Callback {
     @Override
     public void onAudioFormatChange(AudioFormat audioFormat) {
         if (!isAudioEncoderStart&&videoFormat!=null){
-            cameraEncoder.start(textureRender.getEglContext(),videoFormat);
+            cameraEncoder.start(cameraRender.getEglContext(),videoFormat);
             isAudioEncoderStart = true;
         }
     }

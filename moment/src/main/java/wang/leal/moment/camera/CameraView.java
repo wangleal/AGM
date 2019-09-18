@@ -1,4 +1,4 @@
-package wang.leal.moment;
+package wang.leal.moment.camera;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -11,6 +11,7 @@ import android.view.TextureView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import wang.leal.moment.R;
 import wang.leal.moment.recorder.AudioFormat;
 import wang.leal.moment.recorder.VideoFormat;
 import wang.leal.moment.recorder.VideoRecorder;
@@ -18,7 +19,7 @@ import wang.leal.moment.view.ProgressView;
 
 public class CameraView extends ConstraintLayout {
 
-    private TextureRender textureRender;
+    private CameraRender cameraRender;
     private ProgressView progressView;
     private VideoRecorder videoRecorder;
 
@@ -40,26 +41,31 @@ public class CameraView extends ConstraintLayout {
     private void initView() {
         LayoutInflater.from(getContext()).inflate(R.layout.view_moment_camera, this);
         TextureView textureView = findViewById(R.id.texture_camera);
-        textureRender = new TextureRender(textureView);
-        videoRecorder = new VideoRecorder(getContext(),textureRender);
+        cameraRender = new CameraRender(textureView);
+        videoRecorder = new VideoRecorder(getContext(), cameraRender);
+        videoRecorder.setCallback(videoPath -> {
+            if (this.callback!=null){
+                this.callback.onRecordComplete(videoPath);
+            }
+        });
         progressView = findViewById(R.id.pv_action);
     }
 
     public void startCamera() {
-        if (textureRender != null) {
-            textureRender.startCamera();
+        if (cameraRender != null) {
+            cameraRender.startCamera();
         }
     }
 
     public void switchCamera() {
-        if (textureRender != null) {
-            textureRender.switchCamera();
+        if (cameraRender != null) {
+            cameraRender.switchCamera();
         }
     }
 
     public void closeCamera() {
-        if (textureRender != null) {
-            textureRender.release();
+        if (cameraRender != null) {
+            cameraRender.release();
         }
     }
 
@@ -83,13 +89,13 @@ public class CameraView extends ConstraintLayout {
 
     private void tackPhoto() {
         Log.e("Moment", "tack photo");
-        if (textureRender != null) {
-            textureRender.tackPhoto();
+        if (cameraRender != null) {
+            cameraRender.tackPhoto();
         }
     }
 
     private float oldDist = 1f;
-    private float oldTouchY;//当一个手指并且touch Progress的时候
+    private float oldTouchY;//当并且touch Progress的时候
     private float oldY;
     private int actionPointer = -1;//点击progress的手指
     private Handler handler = new Handler();
@@ -123,21 +129,21 @@ public class CameraView extends ConstraintLayout {
             case MotionEvent.ACTION_MOVE:
                 if (count>1){
                     float newDist = getFingerSpacing(event);
-                    if (textureRender != null) {
+                    if (cameraRender != null) {
                         if (newDist > oldDist) {
-                            textureRender.handleZoom(true);
+                            cameraRender.handleZoom(true);
                         } else if (newDist < oldDist) {
-                            textureRender.handleZoom(false);
+                            cameraRender.handleZoom(false);
                         }
                     }
                     oldDist = newDist;
                 }else if (count==1){
-                    if (textureRender != null) {
+                    if (cameraRender != null&&actionPointer!=-1) {
                         float newY = event.getY();
                         if (newY<oldY){
-                            textureRender.handleZoom(true);
+                            cameraRender.handleZoom(true);
                         }else if (newY>oldY){
-                            textureRender.handleZoom(false);
+                            cameraRender.handleZoom(false);
                         }
                         if (newY>oldTouchY){
                             oldY = oldTouchY;
@@ -157,6 +163,7 @@ public class CameraView extends ConstraintLayout {
                     } else {
                         stopRecord();
                     }
+                    oldY=oldTouchY=0;
                     actionPointer = -1;
                 }
                 break;
@@ -186,5 +193,14 @@ public class CameraView extends ConstraintLayout {
         float x = event.getX(count - 2) - event.getX(count - 1);
         float y = event.getY(count - 2) - event.getY(count - 1);
         return (float) Math.sqrt(x * x + y * y);
+    }
+
+    private Callback callback;
+    public void setCallback(Callback callback){
+        this.callback = callback;
+    }
+
+    public interface Callback{
+        void onRecordComplete(String filePath);
     }
 }

@@ -1,4 +1,4 @@
-package wang.leal.moment;
+package wang.leal.moment.camera;
 
 import android.graphics.SurfaceTexture;
 import android.opengl.EGL14;
@@ -8,8 +8,6 @@ import android.view.TextureView;
 import java.util.ArrayList;
 import java.util.List;
 
-import wang.leal.moment.camera.Camera;
-import wang.leal.moment.camera.CameraInfo;
 import wang.leal.moment.gl.GL2DTextureHelper;
 import wang.leal.moment.gl.GLESUtil;
 import wang.leal.moment.gl.GLFBO2DCamera;
@@ -17,7 +15,7 @@ import wang.leal.moment.gl.GLFBO2DTexture;
 import wang.leal.moment.gl.GLFBOCamera;
 import wang.leal.moment.gl.GLRenderer;
 
-public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
+public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
 
     private GLRenderer glRenderer;
     private Camera camera;
@@ -33,7 +31,7 @@ public class TextureRender implements SurfaceTexture.OnFrameAvailableListener {
     private TextureView textureView;
     private List<Callback> callbacks = new ArrayList<>();
 
-    TextureRender(TextureView textureView) {
+    CameraRender(TextureView textureView) {
         this.textureView = textureView;
         this.camera = new Camera();
     }

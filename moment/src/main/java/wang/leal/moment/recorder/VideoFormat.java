@@ -8,7 +8,7 @@ public class VideoFormat {
     public static final VideoFormat HW480_1200 = new VideoFormat(480,848,1024 * 1200,15,2);
     public static final VideoFormat EQ480_480 = new VideoFormat(480,480,1024 * 1200,15,2);
     public static final VideoFormat HW480_1600 = new VideoFormat(480,848,1024 * 1600,15,2);
-    public static final VideoFormat HW720 = new VideoFormat(720,1280,1024 * 1200,15,2);
+    public static final VideoFormat HW720 = new VideoFormat(720,1280,1024 * 2000,20,2);
 
     public int width;
     public int height;

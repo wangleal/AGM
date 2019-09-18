@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <wang.leal.moment.CameraView
+    <wang.leal.moment.camera.CameraView
         android:id="@+id/cv_moment_camera"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
@@ -18,5 +18,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="100dp"
         android:text="切换摄像头"/>
+    <wang.leal.moment.editor.EditorView
+        android:id="@+id/ev_moment_play"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
