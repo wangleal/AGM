@@ -111,15 +111,23 @@ public class ProgressView extends View {
         }
     }
 
-    private void showDefault(){
+    public void showDefault(){
+        if (valueAnimator!=null){
+            valueAnimator.cancel();
+        }
         type = 0;
+        transitionWidth=0;
+        progress=0;
         invalidate();
     }
-
+    private ValueAnimator valueAnimator;
     public void showTransition(){
+        if (valueAnimator!=null){
+            valueAnimator.cancel();
+        }
         type=1;
         float defaultWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,90,getResources().getDisplayMetrics());
-        ValueAnimator valueAnimator = ValueAnimator.ofInt((int) defaultWidth, getWidth()).setDuration(500);
+        valueAnimator = ValueAnimator.ofInt((int) defaultWidth, getWidth()).setDuration(500);
         valueAnimator.setInterpolator(new BounceInterpolator());
         valueAnimator.addUpdateListener(animation -> {
             transitionWidth = (int) animation.getAnimatedValue();
@@ -129,29 +137,36 @@ public class ProgressView extends View {
     }
 
     public void showRecord(){
+        if (valueAnimator!=null){
+            valueAnimator.cancel();
+        }
         type = 2;
-        ValueAnimator valueAnimator = ValueAnimator.ofInt(0,1000).setDuration(15*1000);
+        valueAnimator = ValueAnimator.ofInt(0,1000).setDuration(15*1000);
         valueAnimator.setInterpolator(new LinearInterpolator());
         valueAnimator.addUpdateListener(animation -> {
             progress = (int) animation.getAnimatedValue();
             postInvalidate();
             if (progress==1000){
+                showDefault();
                 complete();
             }
         });
         valueAnimator.start();
     }
 
-    public void complete(){
-        showDefault();
-        transitionWidth=0;
-        progress=0;
+    private void complete(){
+        if (valueAnimator!=null){
+            valueAnimator.cancel();
+        }
         if (callback!=null){
             callback.onComplete();
         }
     }
 
     public void showLock(){
+        if (valueAnimator!=null){
+            valueAnimator.cancel();
+        }
         type = 3;
         invalidate();
     }

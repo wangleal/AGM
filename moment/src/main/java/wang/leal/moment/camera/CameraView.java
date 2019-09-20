@@ -78,7 +78,7 @@ public class CameraView extends ConstraintLayout {
     }
 
     private boolean isStartRecord;
-
+    private long startTime;//用来处理1秒之内的录取，1秒以内的强制录1秒
     private void startRecord() {
         isStartRecord = true;
         Log.e("Moment", "start record");
@@ -89,6 +89,7 @@ public class CameraView extends ConstraintLayout {
             progressView.showRecord();
         }
         ivLock.setVisibility(VISIBLE);
+        startTime = System.currentTimeMillis();
     }
 
     private void stopRecord() {
@@ -100,6 +101,7 @@ public class CameraView extends ConstraintLayout {
         ivLock.setVisibility(GONE);
         isLock = false;
         isLockPress = false;
+        startTime = 0;
     }
 
     private void tackPhoto() {
@@ -109,8 +111,8 @@ public class CameraView extends ConstraintLayout {
                 if (callback!=null){
                     callback.onPhotoComplete(bitmap);
                 }
-                if (cameraRender!=null){
-                    cameraRender.openFrontCamera();
+                if (progressView!=null){
+                    progressView.showDefault();
                 }
             });
         }
@@ -201,7 +203,13 @@ public class CameraView extends ConstraintLayout {
                     rawY = (int) event.getY(actionIndex) + location[1];
                     if (isTouchPointInView(rawX,rawY,progressView)){
                         if (progressView!=null){
-                            progressView.complete();
+                            progressView.showDefault();
+                        }
+                        long diffTime = System.currentTimeMillis()-startTime;
+                        if (diffTime>=1000&&diffTime<15*1000){
+                            stopRecord();
+                        }else {
+                            handler.postDelayed(this::stopRecord,1000-diffTime);
                         }
                     }
                 }else {
@@ -211,7 +219,13 @@ public class CameraView extends ConstraintLayout {
                             tackPhoto();
                         } else {
                             if (progressView!=null){
-                                progressView.complete();
+                                progressView.showDefault();
+                            }
+                            long diffTime = System.currentTimeMillis()-startTime;
+                            if (diffTime>=1000&&diffTime<15*1000){
+                                stopRecord();
+                            }else {
+                                handler.postDelayed(this::stopRecord,1000-diffTime);
                             }
                         }
                         oldY=oldTouchY=0;
