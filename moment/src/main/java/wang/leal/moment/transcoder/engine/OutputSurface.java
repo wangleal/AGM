@@ -188,12 +188,6 @@ class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
         return mSurface;
     }
     /**
-     * Replaces the fragment shader.
-     */
-    public void changeFragmentShader(String fragmentShader) {
-        mTextureRender.changeFragmentShader(fragmentShader);
-    }
-    /**
      * Latches the next buffer into the texture.  Must be called from the thread that created
      * the OutputSurface object, after the onFrameAvailable callback has signaled that new
      * data is available.
@@ -218,7 +212,6 @@ class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
             mFrameAvailable = false;
         }
         // Latch the data.
-        mTextureRender.checkGlError("before updateTexImage");
         mSurfaceTexture.updateTexImage();
     }
     /**
@@ -244,7 +237,6 @@ class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
             mFrameAvailable = false;
         }
         // Latch the data.
-        mTextureRender.checkGlError("before updateTexImage");
         mSurfaceTexture.updateTexImage();
         return true;
     }

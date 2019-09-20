@@ -11,10 +11,22 @@
 
     <wang.leal.moment.view.ProgressView
         android:id="@+id/pv_action"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="112dp"
+        android:layout_height="112dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="100dp"/>
+        android:layout_marginBottom="61dp"/>
+
+    <ImageView
+        android:id="@+id/iv_lock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_camera_record_lock"
+        app:layout_constraintTop_toTopOf="@id/pv_action"
+        app:layout_constraintBottom_toBottomOf="@id/pv_action"
+        app:layout_constraintEnd_toStartOf="@id/pv_action"
+        android:layout_marginEnd="20dp"
+        android:visibility="gone"
+        />
 </merge>

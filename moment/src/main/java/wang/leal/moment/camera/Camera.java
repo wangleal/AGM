@@ -1,6 +1,8 @@
 package wang.leal.moment.camera;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.net.Uri;
@@ -70,20 +72,13 @@ public class Camera {
         camera.setParameters(parameters);
     }
 
-    public void tackPhoto(){
+    public void tackPhoto(OnPhotoCallback onPhotoCallback){
         if (camera!=null){
-            camera.takePicture(null, null, new android.hardware.Camera.PictureCallback() {
-                @Override
-                public void onPictureTaken(byte[] data, android.hardware.Camera camera) {
-                    android.hardware.Camera.Parameters ps = camera.getParameters();
-                    if(ps.getPictureFormat() == PixelFormat.JPEG){
-                        //存储拍照获得的图片
-                        String path = save(data);
-                        //将图片交给Image程序处理
-                        Uri uri = Uri.fromFile(new File(path));
-                        Intent intent = new Intent();
-                        intent.setAction("android.intent.action.VIEW");
-                        intent.setDataAndType(uri, "image/jpeg");
+            camera.takePicture(null, null, (data, camera) -> {
+                android.hardware.Camera.Parameters ps = camera.getParameters();
+                if(ps.getPictureFormat() == PixelFormat.JPEG){
+                    if (onPhotoCallback!=null){
+                        onPhotoCallback.onPhotoComplete(BitmapFactory.decodeByteArray(data,0,data.length));
                     }
                 }
             });
@@ -177,5 +172,9 @@ public class Camera {
         if (camera!=null){
             camera.addCallbackBuffer(data);
         }
+    }
+
+    public interface OnPhotoCallback{
+        void onPhotoComplete(Bitmap bitmap);
     }
 }

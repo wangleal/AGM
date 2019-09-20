@@ -2,6 +2,7 @@ package wang.leal.agm.moment;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -43,10 +44,25 @@ public class MomentActivity extends AppCompatActivity {
             }
         });
         editorView = findViewById(R.id.ev_moment_play);
-        cameraView.setCallback(filePath -> {
-            if (editorView!=null){
-                editorView.setVisibility(View.VISIBLE);
-                editorView.startPlay(filePath);
+        cameraView.setCallback(new CameraView.Callback() {
+            @Override
+            public void onPhotoComplete(Bitmap bitmap) {
+                cameraView.post(() -> {
+                    if (editorView!=null){
+                        editorView.setVisibility(View.VISIBLE);
+                        editorView.showPhoto(bitmap);
+                    }
+                });
+            }
+
+            @Override
+            public void onRecordComplete(String filePath) {
+                cameraView.post(() -> {
+                    if (editorView!=null){
+                        editorView.setVisibility(View.VISIBLE);
+                        editorView.startPlay(filePath);
+                    }
+                });
             }
         });
     }

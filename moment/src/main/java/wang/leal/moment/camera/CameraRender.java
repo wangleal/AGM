@@ -1,5 +1,6 @@
 package wang.leal.moment.camera;
 
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.opengl.EGL14;
 import android.opengl.EGLContext;
@@ -142,13 +143,15 @@ public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
         }
     }
 
-    void tackPhoto(){
+    void takePhoto(OnPhotoCallback onPhotoCallback){
         if (camera!=null){
-            camera.tackPhoto();
+            if (onPhotoCallback!=null){
+                onPhotoCallback.onPhotoComplete(textureView.getBitmap());
+            }
         }
     }
 
-    private void openFrontCamera() {
+    public void openFrontCamera() {
         try {
             camera.openFront(textureView.getHeight(), textureView.getWidth(), 24);
             startPreview();
@@ -326,6 +329,10 @@ public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
         int onDraw(int textureId, long timestamp);
 
         void onRelease();
+    }
+
+    public interface OnPhotoCallback{
+        void onPhotoComplete(Bitmap bitmap);
     }
 
 }

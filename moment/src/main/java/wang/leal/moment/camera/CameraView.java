@@ -2,12 +2,15 @@ package wang.leal.moment.camera;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.ImageView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
@@ -21,7 +24,9 @@ public class CameraView extends ConstraintLayout {
 
     private CameraRender cameraRender;
     private ProgressView progressView;
+    private ImageView ivLock;
     private VideoRecorder videoRecorder;
+    private boolean isLock = false;
 
     public CameraView(Context context) {
         super(context);
@@ -40,6 +45,7 @@ public class CameraView extends ConstraintLayout {
 
     private void initView() {
         LayoutInflater.from(getContext()).inflate(R.layout.view_moment_camera, this);
+        setClipChildren(false);
         TextureView textureView = findViewById(R.id.texture_camera);
         cameraRender = new CameraRender(textureView);
         videoRecorder = new VideoRecorder(getContext(), cameraRender);
@@ -48,7 +54,9 @@ public class CameraView extends ConstraintLayout {
                 this.callback.onRecordComplete(videoPath);
             }
         });
+        ivLock = findViewById(R.id.iv_lock);
         progressView = findViewById(R.id.pv_action);
+        progressView.setCallback(this::stopRecord);
     }
 
     public void startCamera() {
@@ -77,6 +85,10 @@ public class CameraView extends ConstraintLayout {
         if (videoRecorder!=null){
             videoRecorder.startRecord(VideoFormat.HW720, AudioFormat.SINGLE_CHANNEL_44100);
         }
+        if (progressView!=null){
+            progressView.showRecord();
+        }
+        ivLock.setVisibility(VISIBLE);
     }
 
     private void stopRecord() {
@@ -85,13 +97,24 @@ public class CameraView extends ConstraintLayout {
         if (videoRecorder!=null){
             videoRecorder.stopRecord();
         }
+        ivLock.setVisibility(GONE);
+        isLock = false;
+        isLockPress = false;
     }
 
     private void tackPhoto() {
         Log.e("Moment", "tack photo");
         if (cameraRender != null) {
-            cameraRender.tackPhoto();
+            cameraRender.takePhoto(bitmap -> {
+                if (callback!=null){
+                    callback.onPhotoComplete(bitmap);
+                }
+                if (cameraRender!=null){
+                    cameraRender.openFrontCamera();
+                }
+            });
         }
+
     }
 
     private float oldDist = 1f;
@@ -99,30 +122,37 @@ public class CameraView extends ConstraintLayout {
     private float oldY;
     private int actionPointer = -1;//点击progress的手指
     private Handler handler = new Handler();
+    private boolean isLockPress = false;//锁住状态点击状态
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int count = event.getPointerCount();
+        float rawX, rawY;
+        final int actionIndex = event.getAction() >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+        final int[] location = {0, 0};
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-                float rawX, rawY;
-                final int actionIndex = event.getAction() >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-                final int[] location = {0, 0};
                 getLocationOnScreen(location);
                 rawX = (int) event.getX(actionIndex) + location[0];
                 rawY = (int) event.getY(actionIndex) + location[1];
-
-                if (isTouchPointInView(rawX,rawY)){
+                if (isTouchPointInView(rawX,rawY,progressView)){
                     if (actionPointer!=-1){
                         break;
                     }
                     oldY = oldTouchY = event.getY();
                     actionPointer = event.getPointerId(event.getActionIndex());
-                    if (!isStartRecord){
-                        handler.postDelayed(this::startRecord, 500);
+                    if (isLock){//锁住之后，再次点击action view，意思是结束
+                        isLockPress = true;
+                    }else {
+                        if (!isStartRecord){
+                            handler.postDelayed(this::startRecord, 500);
+                            if (progressView!=null){
+                                progressView.showTransition();
+                            }
+                        }
                     }
-                }else if (count>1&&!isTouchPointInView(rawX,rawY)){
+                }else if (count>1&&!isTouchPointInView(rawX,rawY,progressView)){
                     oldDist = getFingerSpacing(event);
                 }
                 break;
@@ -151,36 +181,58 @@ public class CameraView extends ConstraintLayout {
                             oldY = newY;
                         }
                     }
+                }
 
+                getLocationOnScreen(location);
+                rawX = (int) event.getX(actionIndex) + location[0];
+                rawY = (int) event.getY(actionIndex) + location[1];
+                if (ivLock.getVisibility()==VISIBLE&&isTouchPointInView(rawX,rawY,ivLock)){//检测是否滑中lock
+                    isLock = true;
+                    if (progressView!=null){
+                        progressView.showLock();
+                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
-                if (event.getPointerId(event.getActionIndex())==actionPointer){
-                    if (!isStartRecord) {
-                        handler.removeCallbacksAndMessages(null);
-                        tackPhoto();
-                    } else {
-                        stopRecord();
+                if (isLock&&isLockPress){
+                    getLocationOnScreen(location);
+                    rawX = (int) event.getX(actionIndex) + location[0];
+                    rawY = (int) event.getY(actionIndex) + location[1];
+                    if (isTouchPointInView(rawX,rawY,progressView)){
+                        if (progressView!=null){
+                            progressView.complete();
+                        }
                     }
-                    oldY=oldTouchY=0;
-                    actionPointer = -1;
+                }else {
+                    if (event.getPointerId(event.getActionIndex())==actionPointer){
+                        if (!isStartRecord) {
+                            handler.removeCallbacksAndMessages(null);
+                            tackPhoto();
+                        } else {
+                            if (progressView!=null){
+                                progressView.complete();
+                            }
+                        }
+                        oldY=oldTouchY=0;
+                        actionPointer = -1;
+                    }
                 }
                 break;
         }
         return true;
     }
 
-    private boolean isTouchPointInView(float x, float y) {
-        if (progressView == null) {
+    private boolean isTouchPointInView(float x, float y, View view) {
+        if (view == null) {
             return false;
         }
         int[] location = new int[2];
-        progressView.getLocationOnScreen(location);
+        view.getLocationOnScreen(location);
         int left = location[0];
         int top = location[1];
-        int right = left + progressView.getMeasuredWidth();
-        int bottom = top + progressView.getMeasuredHeight();
+        int right = left + view.getMeasuredWidth();
+        int bottom = top + view.getMeasuredHeight();
         return y >= top && y <= bottom && x >= left
                 && x <= right;
     }
@@ -201,6 +253,7 @@ public class CameraView extends ConstraintLayout {
     }
 
     public interface Callback{
+        void onPhotoComplete(Bitmap bitmap);
         void onRecordComplete(String filePath);
     }
 }

@@ -1,5 +1,6 @@
 package wang.leal.moment.view;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,42 +9,20 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.animation.AnticipateInterpolator;
+import android.view.animation.AnticipateOvershootInterpolator;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.OvershootInterpolator;
 
 public class ProgressView extends View {
-    /**
-     * 画笔对象的引用
-     */
+
     private Paint paint;
-
-    /**
-     * 圆环的颜色
-     */
-    private int roundColor;
-
-    /**
-     * 圆环进度的颜色
-     */
-    private int roundProgressColor;
-
-    /**
-     * 圆环的宽度
-     */
     private float roundWidth;
-
-    /**
-     * 最大进度
-     */
-    private int max;
-
-    /**
-     * 当前进度
-     */
     private int progress;
-
-    private int type;//0默认状态，1开始录制，2锁住
-
+    private int type = 0;//0默认状态，1过度状态，2开始录制，3锁住
     private RectF oval = new RectF();  //用于定义的圆弧的形状和大小的界限
-
+    private int transitionWidth = 0;
     public ProgressView(Context context) {
         this(context, null);
     }
@@ -59,41 +38,130 @@ public class ProgressView extends View {
 
     private void initView(){
         paint = new Paint();
-
-        //获取自定义属性和默认值
-        roundColor = Color.WHITE;
-        roundProgressColor = Color.RED;
-        roundWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,3,getResources().getDisplayMetrics());
-        max = 100;
+        roundWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,4,getResources().getDisplayMetrics());
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if(type==0){
+            //画默认圆环
+            float defaultWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,90,getResources().getDisplayMetrics());
+            int radius = (int) (defaultWidth/2-roundWidth); //圆环的半径
+            int centre = getWidth()/2; //获取圆心的x坐标
+            paint.setColor(Color.WHITE); //设置圆环的颜色
+            paint.setStyle(Paint.Style.STROKE); //设置空心
+            paint.setStrokeWidth(roundWidth); //设置圆环的宽度
+            paint.setAntiAlias(true);  //消除锯齿
+            canvas.drawCircle(centre, centre, radius, paint); //画出圆环
 
-        /**
-         * 画最外层的大圆环
-         */
-        int centre = getWidth()/2; //获取圆心的x坐标
-        int radius = (int) (centre - roundWidth/2)-2; //圆环的半径
-        paint.setColor(roundColor); //设置圆环的颜色
-        paint.setStyle(Paint.Style.STROKE); //设置空心
-        paint.setStrokeWidth(roundWidth-2); //设置圆环的宽度
-        paint.setAntiAlias(true);  //消除锯齿
-        canvas.drawCircle(centre, centre, radius, paint); //画出圆环
+            //画默认内圆
+            float defaultInnerWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,75,getResources().getDisplayMetrics());
+            radius = (int) (defaultInnerWidth/2);
+            paint.setColor(Color.parseColor("#38FFFFFF"));
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawCircle(centre, centre, radius, paint); //画出圆
+        }else if (type==1){
+            //画默认圆环
+            int centre = getWidth()/2; //获取圆心的x坐标
+            int radius = (int) (transitionWidth/2 - roundWidth); //圆环的半径
+            paint.setColor(Color.WHITE); //设置圆环的颜色
+            paint.setStyle(Paint.Style.STROKE); //设置空心
+            paint.setStrokeWidth(roundWidth); //设置圆环的宽度
+            paint.setAntiAlias(true);  //消除锯齿
+            canvas.drawCircle(centre, centre, radius, paint); //画出圆环
+        }else if (type==2||type==3){
+            //画默认圆环
+            int centre = getWidth()/2; //获取圆心的x坐标
+            int radius = (int) (centre - roundWidth); //圆环的半径
+            paint.setColor(Color.WHITE); //设置圆环的颜色
+            paint.setStyle(Paint.Style.STROKE); //设置空心
+            paint.setStrokeWidth(roundWidth); //设置圆环的宽度
+            paint.setAntiAlias(true);  //消除锯齿
+            canvas.drawCircle(centre, centre, radius, paint); //画出圆环
 
-        /**
-         * 画圆弧 ，画圆环的进度
-         */
+            //设置进度是实心还是空心
+            paint.setStrokeWidth(roundWidth); //设置圆环的宽度
+            paint.setColor(Color.RED);  //设置进度的颜色
+            paint.setStrokeJoin(Paint.Join.ROUND);
+            paint.setStrokeCap(Paint.Cap.ROUND);
+            oval.set(centre - radius, centre - radius, centre
+                    + radius, centre + radius);
+            paint.setStyle(Paint.Style.STROKE);
 
-        //设置进度是实心还是空心
-        paint.setStrokeWidth(roundWidth); //设置圆环的宽度
-        paint.setColor(roundProgressColor);  //设置进度的颜色
-        oval.set(centre - radius-1, centre - radius-1, centre
-                + radius+1, centre + radius+1);
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        if(progress !=0){
-            canvas.drawArc(oval, 90, 360 * progress / max, true, paint);  //根据进度画圆弧
+            if(progress !=0){
+                canvas.drawArc(oval, -90, 360 * progress / 1000, false, paint);  //根据进度画圆弧
+            }
+        }
+        if (type==2){
+            //画内部圆形
+            float innerWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,54,getResources().getDisplayMetrics());
+            int radius = (int) (innerWidth/2);
+            int centre = getWidth()/2; //获取圆心的x坐标
+            paint.setColor(Color.RED);
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawCircle(centre, centre, radius, paint); //画出圆
+        }else if (type==3){
+            //画内部矩形
+            float innerWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,40,getResources().getDisplayMetrics());
+            int centre = getWidth()/2; //获取圆心的x坐标
+            paint.setColor(Color.RED);  //设置进度的颜色
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawRect(centre-innerWidth/2,centre-innerWidth/2,centre+innerWidth/2,centre+innerWidth/2,paint);
         }
     }
+
+    private void showDefault(){
+        type = 0;
+        invalidate();
+    }
+
+    public void showTransition(){
+        type=1;
+        float defaultWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,90,getResources().getDisplayMetrics());
+        ValueAnimator valueAnimator = ValueAnimator.ofInt((int) defaultWidth, getWidth()).setDuration(500);
+        valueAnimator.setInterpolator(new BounceInterpolator());
+        valueAnimator.addUpdateListener(animation -> {
+            transitionWidth = (int) animation.getAnimatedValue();
+            postInvalidate();
+        });
+        valueAnimator.start();
+    }
+
+    public void showRecord(){
+        type = 2;
+        ValueAnimator valueAnimator = ValueAnimator.ofInt(0,1000).setDuration(15*1000);
+        valueAnimator.setInterpolator(new LinearInterpolator());
+        valueAnimator.addUpdateListener(animation -> {
+            progress = (int) animation.getAnimatedValue();
+            postInvalidate();
+            if (progress==1000){
+                complete();
+            }
+        });
+        valueAnimator.start();
+    }
+
+    public void complete(){
+        showDefault();
+        transitionWidth=0;
+        progress=0;
+        if (callback!=null){
+            callback.onComplete();
+        }
+    }
+
+    public void showLock(){
+        type = 3;
+        invalidate();
+    }
+
+    private Callback callback;
+    public void setCallback(Callback callback){
+        this.callback = callback;
+    }
+    public interface Callback{
+        void onComplete();
+    }
+
 }

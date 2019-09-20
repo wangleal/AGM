@@ -3,6 +3,7 @@ package wang.leal.moment.editor;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -11,6 +12,7 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -29,6 +31,7 @@ public class EditorView extends ConstraintLayout {
 
     private static final String TAG = "EditorView";
     private VideoView videoView;
+    private ImageView ivPhoto;
 
     public EditorView(Context context) {
         super(context);
@@ -48,6 +51,7 @@ public class EditorView extends ConstraintLayout {
     private void initView() {
         LayoutInflater.from(getContext()).inflate(R.layout.view_moment_editor, this);
         videoView = findViewById(R.id.vv_player);
+        ivPhoto = findViewById(R.id.iv_photo);
         initVideoView();
     }
 
@@ -89,8 +93,14 @@ public class EditorView extends ConstraintLayout {
         });
     }
 
+    public void showPhoto(Bitmap bitmap){
+        ivPhoto.setVisibility(VISIBLE);
+        ivPhoto.setImageBitmap(bitmap);
+    }
+
     private String filePath;
     public void startPlay(String filePath) {
+        ivPhoto.setVisibility(GONE);
         this.filePath = filePath;
         videoView.setAlpha(0);
         setBackgroundColor(Color.TRANSPARENT);
