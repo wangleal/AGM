@@ -105,9 +105,6 @@ public class MomentActivity extends AppCompatActivity {
         if (editorView.getVisibility()==View.VISIBLE){
             editorView.stopPlay();
             editorView.setVisibility(View.GONE);
-            if (cameraView!=null){
-                cameraView.startCamera();
-            }
         }else {
             super.onBackPressed();
         }
