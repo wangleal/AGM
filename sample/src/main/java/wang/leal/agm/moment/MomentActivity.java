@@ -38,11 +38,6 @@ public class MomentActivity extends AppCompatActivity {
     private void initView(){
         cameraView = findViewById(R.id.cv_moment_camera);
         requestPermission();
-        findViewById(R.id.sc_switch).setOnClickListener(v -> {
-            if (cameraView!=null){
-                cameraView.switchCamera();
-            }
-        });
         editorView = findViewById(R.id.ev_moment_play);
         cameraView.setCallback(new CameraView.Callback() {
             @Override

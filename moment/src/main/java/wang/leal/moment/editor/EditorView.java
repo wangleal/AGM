@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -32,6 +33,8 @@ public class EditorView extends ConstraintLayout {
     private static final String TAG = "EditorView";
     private VideoView videoView;
     private ImageView ivPhoto;
+    private Button btSave;
+    private ImageView ivSend;
 
     public EditorView(Context context) {
         super(context);
@@ -85,12 +88,20 @@ public class EditorView extends ConstraintLayout {
             if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
                 videoView.setAlpha(1);
                 setBackgroundColor(Color.BLACK);
+                showView();
             }
             return false;
         });
-        findViewById(R.id.bt_transcoder).setOnClickListener(v -> {
+        ivSend = findViewById(R.id.iv_send);
+        btSave = findViewById(R.id.bt_save);
+        btSave.setOnClickListener(v -> {
             transcoder();
         });
+    }
+
+    private void showView(){
+        ivSend.setVisibility(VISIBLE);
+        btSave.setVisibility(VISIBLE);
     }
 
     public void showPhoto(Bitmap bitmap){
@@ -101,6 +112,8 @@ public class EditorView extends ConstraintLayout {
     private String filePath;
     public void startPlay(String filePath) {
         ivPhoto.setVisibility(GONE);
+        ivSend.setVisibility(GONE);
+        btSave.setVisibility(GONE);
         this.filePath = filePath;
         videoView.setAlpha(0);
         setBackgroundColor(Color.TRANSPARENT);

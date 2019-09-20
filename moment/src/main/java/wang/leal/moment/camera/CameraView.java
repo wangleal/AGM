@@ -57,6 +57,7 @@ public class CameraView extends ConstraintLayout {
         ivLock = findViewById(R.id.iv_lock);
         progressView = findViewById(R.id.pv_action);
         progressView.setCallback(this::stopRecord);
+        findViewById(R.id.iv_switch).setOnClickListener(v -> switchCamera());
     }
 
     public void startCamera() {
@@ -65,7 +66,7 @@ public class CameraView extends ConstraintLayout {
         }
     }
 
-    public void switchCamera() {
+    private void switchCamera() {
         if (cameraRender != null) {
             cameraRender.switchCamera();
         }
