@@ -164,9 +164,6 @@ public class ProgressView extends View {
     }
 
     public void showLock(){
-        if (valueAnimator!=null){
-            valueAnimator.cancel();
-        }
         type = 3;
         invalidate();
     }

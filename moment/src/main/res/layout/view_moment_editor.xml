@@ -46,4 +46,21 @@
         android:layout_marginEnd="80dp"
         android:visibility="gone"
         android:text="保存"/>
+
+    <ImageView
+        android:id="@+id/iv_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@drawable/ic_camera_editor_text"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="11dp"/>
+
+    <wang.leal.moment.view.TextLayout
+        android:id="@+id/tl_text_layout"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        />
 </merge>

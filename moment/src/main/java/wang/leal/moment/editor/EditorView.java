@@ -27,6 +27,7 @@ import wang.leal.moment.recorder.AudioFormat;
 import wang.leal.moment.recorder.VideoFormat;
 import wang.leal.moment.transcoder.MediaTranscoder;
 import wang.leal.moment.transcoder.format.MediaFormatStrategyPresets;
+import wang.leal.moment.view.TextLayout;
 
 public class EditorView extends ConstraintLayout {
 
@@ -35,6 +36,7 @@ public class EditorView extends ConstraintLayout {
     private ImageView ivPhoto;
     private Button btSave;
     private ImageView ivSend;
+    private TextLayout textLayout;
 
     public EditorView(Context context) {
         super(context);
@@ -92,11 +94,20 @@ public class EditorView extends ConstraintLayout {
             }
             return false;
         });
+        videoView.setOnClickListener(v -> showEdit());
+        ivPhoto.setOnClickListener(v -> showEdit());
         ivSend = findViewById(R.id.iv_send);
         btSave = findViewById(R.id.bt_save);
-        btSave.setOnClickListener(v -> {
-            transcoder();
-        });
+        btSave.setOnClickListener(v -> transcoder());
+        textLayout = findViewById(R.id.tl_text_layout);
+        findViewById(R.id.iv_text).setOnClickListener(v -> showEdit());
+    }
+
+    private void showEdit(){
+        if (textLayout!=null){
+            textLayout.setVisibility(VISIBLE);
+            textLayout.showEdit();
+        }
     }
 
     private void showView(){

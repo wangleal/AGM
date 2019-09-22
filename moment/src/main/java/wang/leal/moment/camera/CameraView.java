@@ -191,27 +191,29 @@ public class CameraView extends ConstraintLayout {
                 rawY = (int) event.getY(actionIndex) + location[1];
                 if (ivLock.getVisibility()==VISIBLE&&isTouchPointInView(rawX,rawY,ivLock)){//检测是否滑中lock
                     isLock = true;
-                    if (progressView!=null){
-                        progressView.showLock();
-                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
-                if (isLock&&isLockPress){
-                    getLocationOnScreen(location);
-                    rawX = (int) event.getX(actionIndex) + location[0];
-                    rawY = (int) event.getY(actionIndex) + location[1];
-                    if (isTouchPointInView(rawX,rawY,progressView)){
-                        if (progressView!=null){
-                            progressView.showDefault();
+                if (isLock){
+                    if (isLockPress){
+                        getLocationOnScreen(location);
+                        rawX = (int) event.getX(actionIndex) + location[0];
+                        rawY = (int) event.getY(actionIndex) + location[1];
+                        if (isTouchPointInView(rawX,rawY,progressView)){
+                            if (progressView!=null){
+                                progressView.showDefault();
+                            }
+                            long diffTime = System.currentTimeMillis()-startTime;
+                            if (diffTime>=1000&&diffTime<15*1000){
+                                stopRecord();
+                            }else {
+                                handler.postDelayed(this::stopRecord,1000-diffTime);
+                            }
                         }
-                        long diffTime = System.currentTimeMillis()-startTime;
-                        if (diffTime>=1000&&diffTime<15*1000){
-                            stopRecord();
-                        }else {
-                            handler.postDelayed(this::stopRecord,1000-diffTime);
-                        }
+                    }
+                    if (progressView!=null){
+                        progressView.showLock();
                     }
                 }else {
                     if (event.getPointerId(event.getActionIndex())==actionPointer){
