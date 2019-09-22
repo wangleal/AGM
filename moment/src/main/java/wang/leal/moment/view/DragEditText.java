@@ -2,14 +2,12 @@ package wang.leal.moment.view;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.os.IBinder;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -42,7 +40,6 @@ public class DragEditText extends ConstraintLayout {
         initView();
     }
 
-    private int rootViewVisibleHeight;
     private void initView(){
         etText = new DragEdit(getContext());
         etText.setGravity(Gravity.CENTER);
@@ -58,39 +55,14 @@ public class DragEditText extends ConstraintLayout {
         etParams.topToTop = LayoutParams.PARENT_ID;
         etParams.bottomToBottom = LayoutParams.PARENT_ID;
         etText.setOnEditorActionListener((v, actionId, event) -> (event.getKeyCode()== KeyEvent.KEYCODE_ENTER));
-        getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            Rect r = new Rect();
-            getWindowVisibleDisplayFrame(r);
-            int visibleHeight = r.height();
-            if (rootViewVisibleHeight == 0) {
-                rootViewVisibleHeight = visibleHeight;
-                return;
-            }
-            //根视图显示高度没有变化，可以看作软键盘显示／隐藏状态没有改变
-            if (rootViewVisibleHeight == visibleHeight) {
-                return;
-            }
-            //根视图显示高度变小超过200，可以看作软键盘显示了
-            if (rootViewVisibleHeight - visibleHeight > 200) {
-                keyBoardIsShow();
-                rootViewVisibleHeight = visibleHeight;
-                return;
-            }
-            //根视图显示高度变大超过200，可以看作软键盘隐藏了
-            if (visibleHeight - rootViewVisibleHeight > 200) {
-                keyBoardIsHide();
-                rootViewVisibleHeight = visibleHeight;
-            }
-        });
     }
 
-    private void keyBoardIsShow(){
-        ((View)getParent()).setBackgroundColor(Color.parseColor("#b4000000"));
+    public void keyBoardIsShow(int diff){
+
     }
 
-    private void keyBoardIsHide(){
+    public void keyBoardIsHide(int diff){
         etText.clearFocus();
-        ((View)getParent()).setBackgroundColor(Color.TRANSPARENT);
     }
 
     @Override
@@ -213,6 +185,13 @@ public class DragEditText extends ConstraintLayout {
             fCursorDrawableRes.set(editText,drawable);
         } catch (Throwable e) {
             e.printStackTrace();
+        }
+    }
+
+    public void showTextSize(int sizeOfSP){
+        float textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,sizeOfSP,getResources().getDisplayMetrics());
+        if (etText!=null){
+            etText.setTextSize(textSize);
         }
     }
 }
