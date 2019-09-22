@@ -43,7 +43,7 @@ public class DragEditText extends ConstraintLayout {
     private void initView(){
         etText = new DragEdit(getContext());
         etText.setGravity(Gravity.CENTER);
-        float textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,16,getResources().getDisplayMetrics());
+        float textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,18,getResources().getDisplayMetrics());
         etText.setTextSize(textSize);
         etText.setTextColor(Color.WHITE);
         etText.setBackground(null);
