@@ -18,12 +18,10 @@
 // modified: removed unused method bodies
 // modified: use GL_LINEAR for GL_TEXTURE_MIN_FILTER to improve quality.
 package wang.leal.moment.transcoder.engine;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.util.Log;
 
+import wang.leal.moment.editor.EditorView;
 import wang.leal.moment.gl.GL2DTextureHelper;
 import wang.leal.moment.gl.GLESUtil;
 import wang.leal.moment.gl.GLFBO3DTo2DTexture;
@@ -45,10 +43,9 @@ class TextureRender {
 
         glfbo3DTo2DTexture = new GLFBO3DTo2DTexture();
         gl2dHelper = new GL2DTextureHelper();
-        Bitmap bitmap = Bitmap.createBitmap(100,100, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawColor(Color.RED);
-        watermark = new GLWatermark(bitmap);
+        if (EditorView.waterMark!=null){
+            watermark = new GLWatermark(EditorView.waterMark);
+        }
 
     }
     public int getTextureId() {
@@ -58,7 +55,13 @@ class TextureRender {
         GLESUtil.clearTransparent();
         st.getTransformMatrix(MatrixUtil.getOriginMatrix());
         glfbo3DTo2DTexture.draw(mTextureID,mvpMatrix,textureMatrix);
-        int textureId = watermark.onDraw(null,glfbo3DTo2DTexture.getTextureId(),System.currentTimeMillis());
+        int textureId;
+        if (watermark!=null){
+            textureId = watermark.onDraw(null,glfbo3DTo2DTexture.getTextureId(),System.currentTimeMillis());
+        }else {
+            textureId = glfbo3DTo2DTexture.getTextureId();
+        }
+
         Log.e("TextureRender","render");
         if (gl2dHelper != null) {
             gl2dHelper.draw(textureId);
@@ -75,7 +78,21 @@ class TextureRender {
         glfbo3DTo2DTexture.sizeChanged(720,1280);
         gl2dHelper.create();
         gl2dHelper.sizeChanged(720,1280);
-        watermark.onCreate(null,null);
-        watermark.onSizeChanged(null,720,1280);
+        if (watermark!=null){
+            watermark.onCreate(null,null);
+            watermark.onSizeChanged(null,720,1280);
+        }
+    }
+
+    public void release(){
+        if (watermark!=null){
+            watermark.onRelease();
+        }
+        if (gl2dHelper!=null){
+            gl2dHelper.release();
+        }
+        if (glfbo3DTo2DTexture!=null){
+            glfbo3DTo2DTexture.release();
+        }
     }
 }

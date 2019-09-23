@@ -169,6 +169,7 @@ class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
         mEGLDisplay = EGL14.EGL_NO_DISPLAY;
         mEGLContext = EGL14.EGL_NO_CONTEXT;
         mEGLSurface = EGL14.EGL_NO_SURFACE;
+        mTextureRender.release();
         mTextureRender = null;
         mSurface = null;
         mSurfaceTexture = null;

@@ -1,15 +1,11 @@
 package wang.leal.moment.recorder;
 
 import android.annotation.TargetApi;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.media.MediaCodec;
 import android.media.MediaMuxer;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -51,13 +47,11 @@ public class MP4Muxer implements AudioEncoder.Callback,VideoEncoder.Callback {
         }
     }
 
-    private long duration = 0;
     private synchronized void startMuxer(){
         if (audioFormat!=null&&videoFormat!=null&&mediaMuxer!=null){
             audioIndex = mediaMuxer.addTrack(audioFormat.format);
             videoIndex = mediaMuxer.addTrack(videoFormat.format);
             mediaMuxer.start();
-            duration = System.currentTimeMillis();
         }
     }
 
@@ -149,7 +143,9 @@ public class MP4Muxer implements AudioEncoder.Callback,VideoEncoder.Callback {
                 this.audioFormat = null;
                 this.videoFormat = null;
                 mediaMuxer = null;
-                insertToMediaStore(new File(filePath));
+                if (this.callback!=null){
+                    this.callback.onComplete(filePath);
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -157,7 +153,7 @@ public class MP4Muxer implements AudioEncoder.Callback,VideoEncoder.Callback {
     }
 
     private String getDefaultPath() {
-        File rootFileDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+        File rootFileDir = context.getExternalCacheDir();
         if (rootFileDir==null){
             throw new RuntimeException("Default root dir is null.May not be authorized.");
         }
@@ -175,33 +171,6 @@ public class MP4Muxer implements AudioEncoder.Callback,VideoEncoder.Callback {
             e.printStackTrace();
         }
         return filePath;
-    }
-
-    private void insertToMediaStore(File sourceFile){
-
-        ContentValues newValues = new ContentValues(6);
-        String title = sourceFile.getName();
-        newValues.put(MediaStore.Video.Media.TITLE,title);
-        newValues.put(MediaStore.Video.Media.DISPLAY_NAME,
-                sourceFile.getName());
-        newValues.put(MediaStore.Video.Media.DATA, sourceFile.getPath());
-        newValues.put(MediaStore.Video.Media.DATE_MODIFIED,
-                System.currentTimeMillis() / 1000);
-        newValues.put(MediaStore.Video.Media.SIZE, sourceFile.length());
-        newValues.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
-        if (duration!=0){
-            duration = System.currentTimeMillis()-duration;
-            newValues.put(MediaStore.Video.Media.DURATION,duration);
-            duration = 0;
-        }
-        Uri uri = context.getContentResolver().insert(
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, newValues);
-        Intent localIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
-        localIntent.setData(uri);
-        context.sendBroadcast(localIntent);
-        if (this.callback!=null){
-            this.callback.onComplete(sourceFile.getAbsolutePath());
-        }
     }
 
     public void release(){

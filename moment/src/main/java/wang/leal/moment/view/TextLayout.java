@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 
@@ -36,10 +35,9 @@ public class TextLayout extends ConstraintLayout {
     private void initView(){
         LayoutInflater.from(getContext()).inflate(R.layout.view_moment_editor_text_layout,this);
         ivSave = findViewById(R.id.iv_save);
-        ivSave.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
+        ivSave.setOnClickListener(v -> {
+            if (dragText!=null){
+                dragText.textLayoutClickOut();
             }
         });
         dragText = findViewById(R.id.det_text);

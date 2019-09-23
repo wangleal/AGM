@@ -99,9 +99,8 @@ public class DragEditText extends ConstraintLayout {
                     if (getTranslationY() < -getTop() && deltaY < 0) deltaY = 0;
                     else if (getTranslationY() > (parentHeight - getBottom()) && deltaY > 0) deltaY = 0;
 
-                    setTranslationX(getTranslationX() + deltaX);
-                    setTranslationY(getTranslationY() + deltaY);
-
+                    offsetLeftAndRight(deltaX);
+                    offsetTopAndBottom(deltaY);
                     lastX = (int) event.getRawX();
                     lastY = (int) event.getRawY();
                 }

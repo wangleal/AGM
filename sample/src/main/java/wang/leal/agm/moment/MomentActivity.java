@@ -127,5 +127,8 @@ public class MomentActivity extends AppCompatActivity {
         if (cameraView!=null){
             cameraView.closeCamera();
         }
+        if (editorView!=null){
+            editorView.release();
+        }
     }
 }

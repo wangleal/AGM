@@ -1,5 +1,6 @@
 package wang.leal.moment.editor;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -7,14 +8,15 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -31,7 +33,6 @@ import wang.leal.moment.view.TextLayout;
 
 public class EditorView extends ConstraintLayout {
 
-    private static final String TAG = "EditorView";
     private VideoView videoView;
     private ImageView ivPhoto;
     private Button btSave;
@@ -136,18 +137,10 @@ public class EditorView extends ConstraintLayout {
         videoView.pause();
     }
 
+    public static Bitmap waterMark = null;
     private void transcoder() {
-        final File file;
-        try {
-            File outputDir = new File(getContext().getExternalFilesDir(null), "outputs");
-            //noinspection ResultOfMethodCallIgnored
-            outputDir.mkdir();
-            file = File.createTempFile("transcode_test", ".mp4", outputDir);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to create temporary file.", e);
-            Toast.makeText(getContext(), "Failed to create temporary file.", Toast.LENGTH_LONG).show();
-            return;
-        }
+        File transcoderFile = getTranscoderFile();
+        Log.e("EditorView","transcode file:"+transcoderFile.getAbsolutePath());
         final long startTime = SystemClock.uptimeMillis();
         MediaTranscoder.Listener listener = new MediaTranscoder.Listener() {
             @Override
@@ -156,9 +149,11 @@ public class EditorView extends ConstraintLayout {
 
             @Override
             public void onTranscodeCompleted() {
-                Log.d(TAG, "transcoding took " + (SystemClock.uptimeMillis() - startTime) + "ms");
+                Log.e("EditorView","transcoding took " + (SystemClock.uptimeMillis() - startTime) + "ms");
+                Log.e("EditorView","complete file:"+transcoderFile.getAbsolutePath());
+                insertToMediaStore(transcoderFile);
                 getContext().startActivity(new Intent(Intent.ACTION_VIEW)
-                        .setDataAndType(Uri.parse(file.getAbsolutePath()), "video/mp4")
+                        .setDataAndType(Uri.parse(transcoderFile.getAbsolutePath()), "video/mp4")
                         .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION));
             }
 
@@ -170,9 +165,17 @@ public class EditorView extends ConstraintLayout {
             public void onTranscodeFailed(Exception exception) {
             }
         };
-        Log.d(TAG, "transcoding into " + file);
+        Log.e("EditorView", "transcoding into " + transcoderFile.getAbsolutePath());
         try {
-            MediaTranscoder.getInstance().transcodeVideo(filePath, file.getAbsolutePath(),
+            textLayout.setDrawingCacheEnabled(true);
+            textLayout.buildDrawingCache();
+            waterMark = textLayout.getDrawingCache();
+            if (waterMark!=null){
+                waterMark = centerCrop(waterMark,720,1280);
+                Log.e("EditorView","bitmap width:"+waterMark.getWidth()+",height:"+waterMark.getHeight()+",bitmap:"+waterMark);
+            }
+            textLayout.destroyDrawingCache();
+            MediaTranscoder.getInstance().transcodeVideo(filePath, transcoderFile.getAbsolutePath(),
                     MediaFormatStrategyPresets.createAndroid720pStrategy(VideoFormat.HW720.bitrate, AudioFormat.SINGLE_CHANNEL_44100.bitrate, AudioFormat.SINGLE_CHANNEL_44100.channelCount), listener);
         }catch (Exception e){
             e.printStackTrace();
@@ -180,6 +183,70 @@ public class EditorView extends ConstraintLayout {
 
     }
 
+    private File getTranscoderFile() {
+        File rootFileDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+        if (rootFileDir==null){
+            throw new RuntimeException("Default root dir is null.May not be authorized.");
+        }
+        if (!rootFileDir.exists()){
+            rootFileDir.mkdirs();
+        }
+        String filePath = rootFileDir.getAbsolutePath()+"/"+System.currentTimeMillis()/1000+".mp4";
+        File file = new File(filePath);
+        if (file.exists()){
+            file.deleteOnExit();
+        }
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    private void insertToMediaStore(File sourceFile){
+
+        ContentValues newValues = new ContentValues(6);
+        String title = sourceFile.getName();
+        newValues.put(MediaStore.Video.Media.TITLE,title);
+        newValues.put(MediaStore.Video.Media.DISPLAY_NAME,
+                sourceFile.getName());
+        newValues.put(MediaStore.Video.Media.DATA, sourceFile.getPath());
+        newValues.put(MediaStore.Video.Media.DATE_MODIFIED,
+                System.currentTimeMillis() / 1000);
+        newValues.put(MediaStore.Video.Media.SIZE, sourceFile.length());
+        newValues.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+//        newValues.put(MediaStore.Video.Media.DURATION,duration);
+        Uri uri = getContext().getContentResolver().insert(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, newValues);
+        Intent localIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
+        localIntent.setData(uri);
+        getContext().sendBroadcast(localIntent);
+    }
+
+    private Bitmap centerCrop(Bitmap bm, int newWidth, int newHeight){
+        int w = bm.getWidth(); // 得到图片的宽，高
+        int h = bm.getHeight();
+        int retX;
+        int retY;
+        double wh = (double) w / (double) h;
+        double nwh = (double) newWidth / (double) newHeight;
+        if (wh > nwh) {
+            retX = h * newWidth / newHeight;
+            retY = h;
+        } else {
+            retX = w;
+            retY = w * newHeight / newWidth;
+        }
+        int startX = w > retX ? (w - retX) / 2 : 0;//基于原图，取正方形左上角x坐标
+        int startY = h > retY ? (h - retY) / 2 : 0;
+        Bitmap bitmap = Bitmap.createBitmap(bm, startX, startY, retX, retY, null, false);
+        return Bitmap.createScaledBitmap(bitmap,newWidth,newHeight,false);
+    }
+
     public void release() {
+        if (waterMark!=null&&!waterMark.isRecycled()){
+            waterMark.recycle();
+        }
     }
 }
