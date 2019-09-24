@@ -50,7 +50,7 @@ public class CameraView extends ConstraintLayout {
         cameraRender = new CameraRender(textureView);
         videoRecorder = new VideoRecorder(getContext(), cameraRender);
         videoRecorder.setCallback(videoPath -> {
-            if (this.callback!=null){
+            if (this.callback != null) {
                 this.callback.onRecordComplete(videoPath);
             }
         });
@@ -80,13 +80,14 @@ public class CameraView extends ConstraintLayout {
 
     private boolean isStartRecord;
     private long startTime;//用来处理1秒之内的录取，1秒以内的强制录1秒
+
     private void startRecord() {
         isStartRecord = true;
         Log.e("Moment", "start record");
-        if (videoRecorder!=null){
+        if (videoRecorder != null) {
             videoRecorder.startRecord(VideoFormat.HW720, AudioFormat.SINGLE_CHANNEL_44100);
         }
-        if (progressView!=null){
+        if (progressView != null) {
             progressView.showRecord();
         }
         ivLock.setVisibility(VISIBLE);
@@ -96,23 +97,24 @@ public class CameraView extends ConstraintLayout {
     private void stopRecord() {
         isStartRecord = false;
         Log.e("Moment", "stop record");
-        if (videoRecorder!=null){
+        if (videoRecorder != null) {
             videoRecorder.stopRecord();
         }
         ivLock.setVisibility(GONE);
         isLock = false;
         isLockPress = false;
         startTime = 0;
+        actionPointer = -1;
     }
 
     private void tackPhoto() {
         Log.e("Moment", "tack photo");
         if (cameraRender != null) {
             cameraRender.takePhoto(bitmap -> {
-                if (callback!=null){
+                if (callback != null) {
                     callback.onPhotoComplete(bitmap);
                 }
-                if (progressView!=null){
+                if (progressView != null) {
                     progressView.showDefault();
                 }
             });
@@ -126,118 +128,131 @@ public class CameraView extends ConstraintLayout {
     private int actionPointer = -1;//点击progress的手指
     private Handler handler = new Handler();
     private boolean isLockPress = false;//锁住状态点击状态
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int count = event.getPointerCount();
-        float rawX, rawY;
-        final int actionIndex = event.getAction() >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-        final int[] location = {0, 0};
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-                getLocationOnScreen(location);
-                rawX = (int) event.getX(actionIndex) + location[0];
-                rawY = (int) event.getY(actionIndex) + location[1];
-                if (isTouchPointInView(rawX,rawY,progressView)){
-                    if (actionPointer!=-1){
-                        break;
-                    }
-                    oldY = oldTouchY = event.getY();
-                    actionPointer = event.getPointerId(event.getActionIndex());
-                    if (isLock){//锁住之后，再次点击action view，意思是结束
+                if (isTouchProgress(event)) {
+                    if (isLock) {//锁住之后，再次点击action view，意思是结束
                         isLockPress = true;
-                    }else {
-                        if (!isStartRecord){
+                    } else {
+                        if (actionPointer != -1) {
+                            break;
+                        }
+                        oldY = oldTouchY = event.getY();
+                        actionPointer = event.getPointerId(event.getActionIndex());
+                        if (!isStartRecord) {
                             handler.postDelayed(this::startRecord, 500);
-                            if (progressView!=null){
+                            if (progressView != null) {
                                 progressView.showTransition();
                             }
                         }
                     }
-                }else if (count>1&&!isTouchPointInView(rawX,rawY,progressView)){
-                    oldDist = getFingerSpacing(event);
+                } else {
+                    if (count > 1) {//当手指数量大于1，才开始计算两指缩放
+                        oldDist = getFingerSpacing(event);
+                    }
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (count>1){
-                    float newDist = getFingerSpacing(event);
-                    if (cameraRender != null) {
-                        if (newDist > oldDist) {
-                            cameraRender.handleZoom(true);
-                        } else if (newDist < oldDist) {
-                            cameraRender.handleZoom(false);
+                if (!isTouchProgress(event)) {
+                    if (count > 1) {
+                        float newDist = getFingerSpacing(event);
+                        if (cameraRender != null) {
+                            if (newDist > oldDist) {
+                                cameraRender.handleZoom(true);
+                            } else if (newDist < oldDist) {
+                                cameraRender.handleZoom(false);
+                            }
                         }
-                    }
-                    oldDist = newDist;
-                }else if (count==1){
-                    if (cameraRender != null&&actionPointer!=-1) {
-                        float newY = event.getY();
-                        if (newY<oldY){
-                            cameraRender.handleZoom(true);
-                        }else if (newY>oldY){
-                            cameraRender.handleZoom(false);
-                        }
-                        if (newY>oldTouchY){
-                            oldY = oldTouchY;
-                        }else {
-                            oldY = newY;
+                        oldDist = newDist;
+                    } else if (count == 1) {
+                        if (cameraRender != null && actionPointer != -1) {
+                            float newY = event.getY();
+                            if (newY < oldY) {
+                                cameraRender.handleZoom(true);
+                            } else if (newY > oldY) {
+                                cameraRender.handleZoom(false);
+                            }
+                            if (newY > oldTouchY) {
+                                oldY = oldTouchY;
+                            } else {
+                                oldY = newY;
+                            }
                         }
                     }
                 }
-
-                getLocationOnScreen(location);
-                rawX = (int) event.getX(actionIndex) + location[0];
-                rawY = (int) event.getY(actionIndex) + location[1];
-                if (ivLock.getVisibility()==VISIBLE&&isTouchPointInView(rawX,rawY,ivLock)){//检测是否滑中lock
+                if (ivLock.getVisibility() == VISIBLE && isTouchLock(event)) {//检测是否滑中lock
                     isLock = true;
                 }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
-                if (isLock){
-                    if (isLockPress){
-                        getLocationOnScreen(location);
-                        rawX = (int) event.getX(actionIndex) + location[0];
-                        rawY = (int) event.getY(actionIndex) + location[1];
-                        if (isTouchPointInView(rawX,rawY,progressView)){
-                            if (progressView!=null){
+                if (isLock) {
+                    if (isLockPress) {
+                        if (isTouchProgress(event)) {
+                            if (progressView != null) {
                                 progressView.showDefault();
                             }
-                            long diffTime = System.currentTimeMillis()-startTime;
-                            if (diffTime>=1000&&diffTime<15*1000){
+                            long diffTime = System.currentTimeMillis() - startTime;
+                            if (diffTime >= 1000 && diffTime < 15 * 1000) {
                                 stopRecord();
-                            }else {
-                                handler.postDelayed(this::stopRecord,1000-diffTime);
+                            } else {
+                                handler.postDelayed(this::stopRecord, 1000 - diffTime);
                             }
                         }
+                    } else {
+                        if (progressView != null) {
+                            progressView.showLock();
+                        }
                     }
-                    if (progressView!=null){
-                        progressView.showLock();
-                    }
-                }else {
-                    if (event.getPointerId(event.getActionIndex())==actionPointer){
+                } else {
+                    if (event.getPointerId(event.getActionIndex()) == actionPointer) {
                         if (!isStartRecord) {
                             handler.removeCallbacksAndMessages(null);
                             tackPhoto();
                         } else {
-                            if (progressView!=null){
+                            if (progressView != null) {
                                 progressView.showDefault();
                             }
-                            long diffTime = System.currentTimeMillis()-startTime;
-                            if (diffTime>=1000&&diffTime<15*1000){
+                            long diffTime = System.currentTimeMillis() - startTime;
+                            if (diffTime >= 1000 && diffTime < 15 * 1000) {
                                 stopRecord();
-                            }else {
-                                handler.postDelayed(this::stopRecord,1000-diffTime);
+                            } else {
+                                handler.postDelayed(this::stopRecord, 1000 - diffTime);
                             }
                         }
-                        oldY=oldTouchY=0;
+                        oldY = oldTouchY = 0;
                         actionPointer = -1;
                     }
                 }
                 break;
         }
         return true;
+    }
+
+    private boolean isTouchProgress(MotionEvent event) {
+        float rawX, rawY;
+        final int[] location = {0, 0};
+        final int actionIndex = event.getAction() >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+        getLocationOnScreen(location);
+        rawX = (int) event.getX(actionIndex) + location[0];
+        rawY = (int) event.getY(actionIndex) + location[1];
+        return isTouchPointInView(rawX, rawY, progressView);
+    }
+
+    private boolean isTouchLock(MotionEvent event) {
+        float rawX, rawY;
+        final int[] location = {0, 0};
+        final int actionIndex = event.getAction() >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+        getLocationOnScreen(location);
+        rawX = (int) event.getX(actionIndex) + location[0];
+        rawY = (int) event.getY(actionIndex) + location[1];
+        return isTouchPointInView(rawX, rawY, ivLock);
     }
 
     private boolean isTouchPointInView(float x, float y, View view) {
@@ -265,12 +280,14 @@ public class CameraView extends ConstraintLayout {
     }
 
     private Callback callback;
-    public void setCallback(Callback callback){
+
+    public void setCallback(Callback callback) {
         this.callback = callback;
     }
 
-    public interface Callback{
+    public interface Callback {
         void onPhotoComplete(Bitmap bitmap);
+
         void onRecordComplete(String filePath);
     }
 }
