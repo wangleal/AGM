@@ -5,7 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
@@ -22,6 +26,7 @@ import android.widget.VideoView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import wang.leal.moment.R;
@@ -101,7 +106,13 @@ public class EditorView extends ConstraintLayout {
         ivPhoto.setOnClickListener(v -> showEdit());
         ivSend = findViewById(R.id.iv_send);
         btSave = findViewById(R.id.bt_save);
-        btSave.setOnClickListener(v -> transcoder());
+        btSave.setOnClickListener(v -> {
+            if (ivPhoto.getVisibility()==VISIBLE){
+                savePhoto();
+            }else {
+                transcoder();
+            }
+        });
         textLayout = findViewById(R.id.tl_text_layout);
         findViewById(R.id.iv_text).setOnClickListener(v -> showEdit());
     }
@@ -142,6 +153,54 @@ public class EditorView extends ConstraintLayout {
         videoView.pause();
     }
 
+    private void savePhoto(){
+        try {
+            textLayout.setDrawingCacheEnabled(true);
+            textLayout.buildDrawingCache();
+            waterMark = textLayout.getDrawingCache();
+            Drawable drawable = ivPhoto.getDrawable();
+            Bitmap bitmap = null;
+            if (drawable instanceof BitmapDrawable){
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+                Bitmap sourceBitmap = bitmapDrawable.getBitmap();
+                bitmap = Bitmap.createBitmap(sourceBitmap.getWidth(), sourceBitmap.getHeight(),
+                        Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                canvas.drawBitmap(sourceBitmap, 0, 0, null);
+                canvas.drawBitmap(waterMark,0,0,null);
+                canvas.save();
+            }
+            textLayout.destroyDrawingCache();
+            saveToFile(bitmap);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void saveToFile(Bitmap bitmap){
+        if (bitmap==null){
+            return;
+        }
+        new Thread(){
+            @Override
+            public void run() {
+                try {
+                    File photoFile = getPhotoFile();
+                    if (!photoFile.exists()) {
+                        photoFile.createNewFile();
+                    }
+                    FileOutputStream fos = new FileOutputStream(photoFile);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                    fos.flush();
+                    fos.close();
+                    insertPhotoToMediaStore(photoFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+    }
+
     public static Bitmap waterMark = null;
     private void transcoder() {
         File transcoderFile = getTranscoderFile();
@@ -156,7 +215,7 @@ public class EditorView extends ConstraintLayout {
             public void onTranscodeCompleted() {
                 Log.e("EditorView","transcoding took " + (SystemClock.uptimeMillis() - startTime) + "ms");
                 Log.e("EditorView","complete file:"+transcoderFile.getAbsolutePath());
-                insertToMediaStore(transcoderFile);
+                insertVideoToMediaStore(transcoderFile);
                 getContext().startActivity(new Intent(Intent.ACTION_VIEW)
                         .setDataAndType(Uri.parse(transcoderFile.getAbsolutePath()), "video/mp4")
                         .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION));
@@ -209,7 +268,46 @@ public class EditorView extends ConstraintLayout {
         return file;
     }
 
-    private void insertToMediaStore(File sourceFile){
+    private File getPhotoFile() {
+        File rootFileDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+        if (rootFileDir==null){
+            throw new RuntimeException("Default root dir is null.May not be authorized.");
+        }
+        if (!rootFileDir.exists()){
+            rootFileDir.mkdirs();
+        }
+        String filePath = rootFileDir.getAbsolutePath()+"/"+System.currentTimeMillis()/1000+".jpg";
+        File file = new File(filePath);
+        if (file.exists()){
+            file.deleteOnExit();
+        }
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    private void insertPhotoToMediaStore(File sourceFile){
+
+        ContentValues newValues = new ContentValues(6);
+        String title = sourceFile.getName();
+        newValues.put(MediaStore.Images.Media.TITLE,title);
+        newValues.put(MediaStore.Images.Media.DISPLAY_NAME,
+                sourceFile.getName());
+        newValues.put(MediaStore.Images.Media.DATA, sourceFile.getPath());
+        newValues.put(MediaStore.Images.Media.DATE_MODIFIED,
+                System.currentTimeMillis() / 1000);
+        newValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        Uri uri = getContext().getContentResolver().insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, newValues);
+        Intent localIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
+        localIntent.setData(uri);
+        getContext().sendBroadcast(localIntent);
+    }
+
+    private void insertVideoToMediaStore(File sourceFile){
 
         ContentValues newValues = new ContentValues(6);
         String title = sourceFile.getName();
@@ -221,7 +319,11 @@ public class EditorView extends ConstraintLayout {
                 System.currentTimeMillis() / 1000);
         newValues.put(MediaStore.Video.Media.SIZE, sourceFile.length());
         newValues.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
-//        newValues.put(MediaStore.Video.Media.DURATION,duration);
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(sourceFile.getAbsolutePath());
+        // 取得视频的长度(单位为毫秒)
+        String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        newValues.put(MediaStore.Video.Media.DURATION,time);
         Uri uri = getContext().getContentResolver().insert(
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI, newValues);
         Intent localIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
