@@ -27,6 +27,7 @@ import java.io.IOException;
 import wang.leal.moment.R;
 import wang.leal.moment.recorder.AudioFormat;
 import wang.leal.moment.recorder.VideoFormat;
+import wang.leal.moment.transcoder.ImageTranscoder;
 import wang.leal.moment.transcoder.MediaTranscoder;
 import wang.leal.moment.transcoder.format.MediaFormatStrategyPresets;
 import wang.leal.moment.view.TextLayout;
@@ -118,7 +119,8 @@ public class EditorView extends ConstraintLayout {
 
     public void showPhoto(Bitmap bitmap){
         ivPhoto.setVisibility(VISIBLE);
-        ivPhoto.setImageBitmap(bitmap);
+        ivPhoto.setImageBitmap(ImageTranscoder.mosaic(getContext(),bitmap));
+        showView();
     }
 
     private String filePath;
