@@ -1,6 +1,7 @@
 package wang.leal.moment.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -16,6 +17,7 @@ public class TextLayout extends ConstraintLayout {
     private ImageView ivSave;
     private ConstraintLayout clBottom;
     private DragEditText dragText;
+    private ImageView ivCover;
     private int rootViewVisibleHeight;
     public TextLayout(Context context) {
         super(context);
@@ -87,22 +89,29 @@ public class TextLayout extends ConstraintLayout {
                 }
             }
         });
+        ivCover = findViewById(R.id.iv_cover);
+    }
+
+    public void showCover(Bitmap bitmap){
+        ivCover.setImageBitmap(bitmap);
     }
 
     private void keyBoardIsShow(int diff){
         if (dragText!=null){
+            setBackgroundColor(Color.parseColor("#b4000000"));
+            clBottom.setVisibility(VISIBLE);
+            clBottom.setTranslationY(-diff);
             dragText.keyBoardIsShow(diff);
         }
-        setBackgroundColor(Color.parseColor("#b4000000"));
-        clBottom.setTranslationY(-diff);
     }
 
     private void keyBoardIsHide(int diff){
         if (dragText!=null){
+            setBackgroundColor(Color.TRANSPARENT);
+            clBottom.setTranslationY(diff);
+            clBottom.setVisibility(GONE);
             dragText.keyBoardIsHide(diff);
         }
-        setBackgroundColor(Color.TRANSPARENT);
-        clBottom.setTranslationY(diff);
     }
 
     public void showEdit(){

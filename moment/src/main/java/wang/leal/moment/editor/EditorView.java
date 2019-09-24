@@ -39,6 +39,7 @@ public class EditorView extends ConstraintLayout {
     private Button btSave;
     private ImageView ivSend;
     private TextLayout textLayout;
+    private Bitmap coverBitmap;
 
     public EditorView(Context context) {
         super(context);
@@ -107,7 +108,6 @@ public class EditorView extends ConstraintLayout {
 
     private void showEdit(){
         if (textLayout!=null){
-            textLayout.setVisibility(VISIBLE);
             textLayout.showEdit();
         }
     }
@@ -115,16 +115,19 @@ public class EditorView extends ConstraintLayout {
     private void showView(){
         ivSend.setVisibility(VISIBLE);
         btSave.setVisibility(VISIBLE);
+        textLayout.showCover(coverBitmap);
     }
 
-    public void showPhoto(Bitmap bitmap){
+    public void showPhoto(Bitmap bitmap,Bitmap coverBitmap){
+        this.coverBitmap = coverBitmap;
         ivPhoto.setVisibility(VISIBLE);
         ivPhoto.setImageBitmap(ImageTranscoder.mosaic(getContext(),bitmap));
         showView();
     }
 
     private String filePath;
-    public void startPlay(String filePath) {
+    public void startPlay(String filePath,Bitmap coverBitmap) {
+        this.coverBitmap = coverBitmap;
         ivPhoto.setVisibility(GONE);
         ivSend.setVisibility(GONE);
         btSave.setVisibility(GONE);
@@ -244,6 +247,14 @@ public class EditorView extends ConstraintLayout {
         int startY = h > retY ? (h - retY) / 2 : 0;
         Bitmap bitmap = Bitmap.createBitmap(bm, startX, startY, retX, retY, null, false);
         return Bitmap.createScaledBitmap(bitmap,newWidth,newHeight,false);
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        if (visibility==GONE){
+            textLayout.showCover(null);
+        }
     }
 
     public void release() {

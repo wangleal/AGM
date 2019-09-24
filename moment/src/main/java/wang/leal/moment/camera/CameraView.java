@@ -3,6 +3,7 @@ package wang.leal.moment.camera;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.viewpager.widget.ViewPager;
 
 import wang.leal.moment.R;
 import wang.leal.moment.recorder.AudioFormat;
@@ -26,6 +28,8 @@ public class CameraView extends ConstraintLayout {
     private ProgressView progressView;
     private ImageView ivLock;
     private VideoRecorder videoRecorder;
+    private ViewPager vpCover;
+    private CoverAdapter coverAdapter;
     private boolean isLock = false;
 
     public CameraView(Context context) {
@@ -50,14 +54,18 @@ public class CameraView extends ConstraintLayout {
         cameraRender = new CameraRender(textureView);
         videoRecorder = new VideoRecorder(getContext(), cameraRender);
         videoRecorder.setCallback(videoPath -> {
-            if (this.callback != null) {
-                this.callback.onRecordComplete(videoPath);
+            if (this.callback != null&&coverAdapter!=null&&vpCover!=null) {
+                int resourceId = coverAdapter.getResourceId(vpCover.getCurrentItem());
+                this.callback.onRecordComplete(videoPath,BitmapFactory.decodeResource(getResources(),resourceId));
             }
         });
         ivLock = findViewById(R.id.iv_lock);
         progressView = findViewById(R.id.pv_action);
         progressView.setCallback(this::stopRecord);
         findViewById(R.id.iv_switch).setOnClickListener(v -> switchCamera());
+        vpCover = findViewById(R.id.vp_cover);
+        coverAdapter = new CoverAdapter();
+        vpCover.setAdapter(coverAdapter);
     }
 
     public void startCamera() {
@@ -111,8 +119,9 @@ public class CameraView extends ConstraintLayout {
         Log.e("Moment", "tack photo");
         if (cameraRender != null) {
             cameraRender.takePhoto(bitmap -> {
-                if (callback != null) {
-                    callback.onPhotoComplete(bitmap);
+                if (callback != null&&vpCover!=null&&coverAdapter!=null) {
+                    int resourceId = coverAdapter.getResourceId(vpCover.getCurrentItem());
+                    callback.onPhotoComplete(bitmap,BitmapFactory.decodeResource(getResources(),resourceId));
                 }
                 if (progressView != null) {
                     progressView.showDefault();
@@ -128,6 +137,21 @@ public class CameraView extends ConstraintLayout {
     private int actionPointer = -1;//点击progress的手指
     private Handler handler = new Handler();
     private boolean isLockPress = false;//锁住状态点击状态
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        switch (ev.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                return isTouchProgress(ev);
+            case MotionEvent.ACTION_POINTER_DOWN:
+                int count = ev.getPointerCount();
+                if (count>1){
+                    return true;
+                }
+                break;
+        }
+        return super.onInterceptTouchEvent(ev);
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -286,8 +310,7 @@ public class CameraView extends ConstraintLayout {
     }
 
     public interface Callback {
-        void onPhotoComplete(Bitmap bitmap);
-
-        void onRecordComplete(String filePath);
+        void onPhotoComplete(Bitmap bitmap,Bitmap coverBitmap);
+        void onRecordComplete(String filePath,Bitmap coverBitmap);
     }
 }

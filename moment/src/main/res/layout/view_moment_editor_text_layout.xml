@@ -14,11 +14,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         />
 
+    <ImageView
+        android:id="@+id/iv_cover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_bottom"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"
         android:layout_marginBottom="13dp">
 
         <RadioGroup
@@ -68,6 +75,4 @@
             />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
 </merge>

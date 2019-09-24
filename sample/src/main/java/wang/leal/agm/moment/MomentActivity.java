@@ -41,21 +41,21 @@ public class MomentActivity extends AppCompatActivity {
         editorView = findViewById(R.id.ev_moment_play);
         cameraView.setCallback(new CameraView.Callback() {
             @Override
-            public void onPhotoComplete(Bitmap bitmap) {
+            public void onPhotoComplete(Bitmap bitmap,Bitmap coverBitmap) {
                 cameraView.post(() -> {
                     if (editorView!=null){
                         editorView.setVisibility(View.VISIBLE);
-                        editorView.showPhoto(bitmap);
+                        editorView.showPhoto(bitmap,coverBitmap);
                     }
                 });
             }
 
             @Override
-            public void onRecordComplete(String filePath) {
+            public void onRecordComplete(String filePath,Bitmap coverBitmap) {
                 cameraView.post(() -> {
                     if (editorView!=null){
                         editorView.setVisibility(View.VISIBLE);
-                        editorView.startPlay(filePath);
+                        editorView.startPlay(filePath,coverBitmap);
                     }
                 });
             }
