@@ -22,6 +22,7 @@ public class CoverAdapter extends PagerAdapter {
         resList.add(R.drawable.pic_camera_cover_circle);
         resList.add(R.drawable.pic_camera_cover_square);
         resList.add(R.drawable.pic_camera_cover_eye);
+        resList.add(R.drawable.pic_camera_cover_circle2);
         resList.add(R.drawable.pic_camera_cover_cloud);
     }
 

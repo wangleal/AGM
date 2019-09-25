@@ -15,6 +15,16 @@
         android:layout_height="match_parent"
         />
 
+    <ImageView
+        android:id="@+id/iv_focus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
+        android:src="@drawable/ic_camera_record_focus"/>
+
     <wang.leal.moment.view.ProgressView
         android:id="@+id/pv_action"
         android:layout_width="112dp"

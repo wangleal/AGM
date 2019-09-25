@@ -31,7 +31,7 @@ public class CameraView extends ConstraintLayout {
     private ViewPager vpCover;
     private CoverAdapter coverAdapter;
     private boolean isLock = false;
-
+    private ImageView ivFocus;
     public CameraView(Context context) {
         super(context);
         initView();
@@ -66,6 +66,7 @@ public class CameraView extends ConstraintLayout {
         vpCover = findViewById(R.id.vp_cover);
         coverAdapter = new CoverAdapter();
         vpCover.setAdapter(coverAdapter);
+        ivFocus = findViewById(R.id.iv_focus);
     }
 
     public void startCamera() {
