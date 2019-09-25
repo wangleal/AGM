@@ -37,12 +37,14 @@ class TextureRender {
     private GLFBO3DTo2DTexture glfbo3DTo2DTexture;
     private GL2DTextureHelper gl2dHelper;
     private GLWatermark watermark;
+//    private GLFilter glFilter;
     private float[] mvpMatrix;
     private float[] textureMatrix;
     public TextureRender() {
 
         glfbo3DTo2DTexture = new GLFBO3DTo2DTexture();
         gl2dHelper = new GL2DTextureHelper();
+//        glFilter = new GLFilter();
         if (EditorView.waterMark!=null){
             watermark = new GLWatermark(EditorView.waterMark);
         }
@@ -55,11 +57,10 @@ class TextureRender {
         GLESUtil.clearTransparent();
         st.getTransformMatrix(MatrixUtil.getOriginMatrix());
         glfbo3DTo2DTexture.draw(mTextureID,mvpMatrix,textureMatrix);
-        int textureId;
+        int textureId = glfbo3DTo2DTexture.getTextureId();
+//        textureId = glFilter.draw(textureId);
         if (watermark!=null){
-            textureId = watermark.onDraw(null,glfbo3DTo2DTexture.getTextureId(),System.currentTimeMillis());
-        }else {
-            textureId = glfbo3DTo2DTexture.getTextureId();
+            textureId = watermark.onDraw(null,textureId,System.currentTimeMillis());
         }
 
         Log.e("TextureRender","render");
@@ -78,6 +79,8 @@ class TextureRender {
         glfbo3DTo2DTexture.sizeChanged(720,1280);
         gl2dHelper.create();
         gl2dHelper.sizeChanged(720,1280);
+//        glFilter.create();
+//        glFilter.sizeChanged(720,1280);
         if (watermark!=null){
             watermark.onCreate(null,null);
             watermark.onSizeChanged(null,720,1280);

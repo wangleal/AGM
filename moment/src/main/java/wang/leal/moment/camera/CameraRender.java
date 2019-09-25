@@ -14,6 +14,7 @@ import wang.leal.moment.gl.GLESUtil;
 import wang.leal.moment.gl.GLFBO2DCamera;
 import wang.leal.moment.gl.GLFBO2DTexture;
 import wang.leal.moment.gl.GLFBOCamera;
+import wang.leal.moment.gl.GLFilter;
 import wang.leal.moment.gl.GLRenderer;
 
 public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
@@ -26,6 +27,7 @@ public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
     private GLFBO2DCamera gl2dCamera;
     private GL2DTextureHelper gl2dHelper;
     private GLFBO2DTexture glfbo2DTexture;
+//    private GLFilter glFilter;
     private int textureId = -1;
     private EGLContext eglContext;
     private boolean isCameraSuccess = true;
@@ -74,6 +76,8 @@ public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
         this.gl2dHelper.create();
         glfbo2DTexture = new GLFBO2DTexture();
         glfbo2DTexture.create();
+//        glFilter = new GLFilter();
+//        glFilter.create();
         openFrontCamera();
         callbackOnCreate();
     }
@@ -101,6 +105,9 @@ public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
         if (glfbo2DTexture != null) {
             glfbo2DTexture.sizeChanged(width, height);
         }
+//        if (glFilter!=null){
+//            glFilter.sizeChanged(width,height);
+//        }
         callbackOnSizeChange(width, height);
     }
 
@@ -121,6 +128,9 @@ public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
             glCamera.draw(texture);
             texture = glCamera.getTextureId();
         }
+//        if (glFilter!=null){
+//            texture = glFilter.draw(texture);
+//        }
         if (surfaceTexture != null) {
             texture = callbackOnDraw(texture, surfaceTexture.getTimestamp());
         }
