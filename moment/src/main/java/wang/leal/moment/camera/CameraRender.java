@@ -163,7 +163,7 @@ public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
 
     public void openFrontCamera() {
         try {
-            camera.openFront(textureView.getHeight(), textureView.getWidth(), 24);
+            camera.openFront(textureView.getHeight(), textureView.getWidth(), 30);
             startPreview();
             CameraInfo currentCameraInfo = camera.getCameraInfo();
             if (currentCameraInfo != null) {
@@ -179,7 +179,7 @@ public class CameraRender implements SurfaceTexture.OnFrameAvailableListener {
 
     private void openBackCamera() {
         try {
-            camera.openBack(textureView.getHeight(), textureView.getWidth(), 24);
+            camera.openBack(textureView.getHeight(), textureView.getWidth(), 30);
             startPreview();
             CameraInfo currentCameraInfo = camera.getCameraInfo();
             if (currentCameraInfo != null) {
