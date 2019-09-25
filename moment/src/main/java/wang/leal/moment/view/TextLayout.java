@@ -93,7 +93,12 @@ public class TextLayout extends ConstraintLayout {
     }
 
     public void showCover(Bitmap bitmap){
-        ivCover.setImageBitmap(bitmap);
+        if (bitmap==null){
+            ivCover.setVisibility(GONE);
+        }else {
+            ivCover.setVisibility(VISIBLE);
+            ivCover.setImageBitmap(bitmap);
+        }
     }
 
     private void keyBoardIsShow(int diff){

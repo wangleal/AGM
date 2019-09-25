@@ -18,6 +18,7 @@ public class ProgressView extends View {
     private float roundWidth;
     private int progress;
     private int type = 0;//0默认状态，1过度状态，2开始录制，3锁住
+    private int mode = 0;//0透明页面上，1白色页面上
     private RectF oval = new RectF();  //用于定义的圆弧的形状和大小的界限
     private int transitionWidth = 0;
     public ProgressView(Context context) {
@@ -42,42 +43,55 @@ public class ProgressView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if(type==0){
+            int color = Color.WHITE;
+            if (mode!=0){
+                color = Color.BLACK;
+            }
             //画默认圆环
             float defaultWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,90,getResources().getDisplayMetrics());
             int radius = (int) (defaultWidth/2-roundWidth); //圆环的半径
             int centre = getWidth()/2; //获取圆心的x坐标
-            paint.setColor(Color.WHITE); //设置圆环的颜色
+            paint.setColor(color); //设置圆环的颜色
             paint.setStyle(Paint.Style.STROKE); //设置空心
             paint.setStrokeWidth(roundWidth); //设置圆环的宽度
             paint.setAntiAlias(true);  //消除锯齿
             canvas.drawCircle(centre, centre, radius, paint); //画出圆环
-
-            //画默认内圆
-            float defaultInnerWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,75,getResources().getDisplayMetrics());
-            radius = (int) (defaultInnerWidth/2);
-            paint.setColor(Color.parseColor("#38FFFFFF"));
-            paint.setStyle(Paint.Style.FILL);
-            canvas.drawCircle(centre, centre, radius, paint); //画出圆
+            if (mode==0){
+                //画默认内圆
+                float defaultInnerWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,75,getResources().getDisplayMetrics());
+                radius = (int) (defaultInnerWidth/2);
+                paint.setColor(Color.parseColor("#38FFFFFF"));
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(centre, centre, radius, paint); //画出圆
+            }
         }else if (type==1){
+            int color = Color.WHITE;
+            if (mode!=0){
+                color = Color.BLACK;
+            }
             //画默认圆环
             int centre = getWidth()/2; //获取圆心的x坐标
             int radius = (int) (transitionWidth/2 - roundWidth); //圆环的半径
-            paint.setColor(Color.WHITE); //设置圆环的颜色
+            paint.setColor(color); //设置圆环的颜色
             paint.setStyle(Paint.Style.STROKE); //设置空心
             paint.setStrokeWidth(roundWidth); //设置圆环的宽度
             paint.setAntiAlias(true);  //消除锯齿
             canvas.drawCircle(centre, centre, radius, paint); //画出圆环
         }else if (type==2||type==3){
+            int color = Color.WHITE;
+            if (mode!=0){
+                color = Color.BLACK;
+            }
             //画默认圆环
             int centre = getWidth()/2; //获取圆心的x坐标
             int radius = (int) (centre - roundWidth); //圆环的半径
-            paint.setColor(Color.WHITE); //设置圆环的颜色
+            paint.setColor(color); //设置圆环的颜色
             paint.setStyle(Paint.Style.STROKE); //设置空心
             paint.setStrokeWidth(roundWidth); //设置圆环的宽度
             paint.setAntiAlias(true);  //消除锯齿
             canvas.drawCircle(centre, centre, radius, paint); //画出圆环
 
-            //设置进度是实心还是空心
+            //绘制进度
             paint.setStrokeWidth(roundWidth); //设置圆环的宽度
             paint.setColor(Color.RED);  //设置进度的颜色
             paint.setStrokeJoin(Paint.Join.ROUND);
@@ -149,6 +163,16 @@ public class ProgressView extends View {
             }
         });
         valueAnimator.start();
+    }
+
+    public void showCover(){
+        this.mode = 1;
+        invalidate();
+    }
+
+    public void showTransparent(){
+        this.mode = 0;
+        invalidate();
     }
 
     private void complete(){

@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.TextureView;
@@ -34,6 +33,9 @@ public class CameraView extends ConstraintLayout {
     private boolean isLock = false;
     private ImageView ivFocus;
     private EditorView editorView;
+    private ImageView ivFriend;
+    private ImageView ivMessage;
+    private ImageView ivSwitch;
     public CameraView(Context context) {
         super(context);
         initView();
@@ -58,18 +60,67 @@ public class CameraView extends ConstraintLayout {
         videoRecorder.setCallback(videoPath -> {
             if (coverAdapter!=null&&vpCover!=null) {
                 int resourceId = coverAdapter.getResourceId(vpCover.getCurrentItem());
-                recordComplete(videoPath,BitmapFactory.decodeResource(getResources(),resourceId));
+                Bitmap coverBitmap = null;
+                if (vpCover.getCurrentItem()!=0){
+                    coverBitmap = BitmapFactory.decodeResource(getResources(),resourceId);
+                }
+                recordComplete(videoPath,coverBitmap);
             }
         });
         ivLock = findViewById(R.id.iv_lock);
         progressView = findViewById(R.id.pv_action);
         progressView.setCallback(this::stopRecord);
-        findViewById(R.id.iv_switch).setOnClickListener(v -> switchCamera());
+        ivSwitch = findViewById(R.id.iv_switch);
+        ivSwitch.setOnClickListener(v -> switchCamera());
         vpCover = findViewById(R.id.vp_cover);
         coverAdapter = new CoverAdapter();
         vpCover.setAdapter(coverAdapter);
         ivFocus = findViewById(R.id.iv_focus);
         editorView = findViewById(R.id.ev_editor);
+        ivFriend = findViewById(R.id.iv_friend);
+        ivFriend.setOnClickListener(v -> openFriend());
+        ivMessage = findViewById(R.id.iv_message);
+        ivMessage.setOnClickListener(v -> openMessage());
+        vpCover.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+            @Override
+            public void onPageSelected(int position) {
+                if (position==0){
+                    ivFriend.setImageResource(R.drawable.ic_camera_record_friend);
+                    ivMessage.setImageResource(R.drawable.ic_camera_record_message);
+                    ivSwitch.setImageResource(R.drawable.ic_camera_record_switch);
+                    progressView.showTransparent();
+                    if (isLock){
+                        ivLock.setImageResource(R.drawable.ic_camera_record_lock);
+                    }else {
+                        ivLock.setImageResource(R.drawable.ic_camera_record_unlock);
+                    }
+                }else{
+                    ivFriend.setImageResource(R.drawable.ic_camera_record_friend_cover);
+                    ivMessage.setImageResource(R.drawable.ic_camera_record_message_cover);
+                    ivSwitch.setImageResource(R.drawable.ic_camera_record_switch_cover);
+                    progressView.showCover();
+                    if (isLock){
+                        ivLock.setImageResource(R.drawable.ic_camera_record_lock_cover);
+                    }else {
+                        ivLock.setImageResource(R.drawable.ic_camera_record_unlock_cover);
+                    }
+                }
+            }
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
+    }
+
+    private void openFriend(){
+
+    }
+
+    private void openMessage(){
+
     }
 
     public void startCamera() {
@@ -105,7 +156,10 @@ public class CameraView extends ConstraintLayout {
             progressView.showRecord();
         }
         ivLock.setVisibility(VISIBLE);
+        ivLock.setImageResource(R.drawable.ic_camera_record_unlock);
         startTime = System.currentTimeMillis();
+        ivFriend.setVisibility(GONE);
+        ivMessage.setVisibility(GONE);
     }
 
     private void stopRecord() {
@@ -125,7 +179,11 @@ public class CameraView extends ConstraintLayout {
             cameraRender.takePhoto(bitmap -> {
                 if (vpCover!=null&&coverAdapter!=null) {
                     int resourceId = coverAdapter.getResourceId(vpCover.getCurrentItem());
-                    photoComplete(bitmap,BitmapFactory.decodeResource(getResources(),resourceId));
+                    Bitmap coverBitmap = null;
+                    if (vpCover.getCurrentItem()!=0){
+                        coverBitmap = BitmapFactory.decodeResource(getResources(),resourceId);
+                    }
+                    photoComplete(bitmap,coverBitmap);
                 }
                 if (progressView != null) {
                     progressView.showDefault();
@@ -150,6 +208,8 @@ public class CameraView extends ConstraintLayout {
                 editorView.setVisibility(View.VISIBLE);
                 editorView.startPlay(filePath,coverBitmap);
             }
+            ivFriend.setVisibility(VISIBLE);
+            ivMessage.setVisibility(VISIBLE);
         });
     }
 
@@ -243,6 +303,18 @@ public class CameraView extends ConstraintLayout {
                 }
                 if (ivLock.getVisibility() == VISIBLE && isTouchLock(event)) {//检测是否滑中lock
                     isLock = true;
+                    if (vpCover.getCurrentItem()==0){
+                        ivLock.setImageResource(R.drawable.ic_camera_record_lock);
+                    }else {
+                        ivLock.setImageResource(R.drawable.ic_camera_record_lock_cover);
+                    }
+                }else {
+                    isLock = false;
+                    if (vpCover.getCurrentItem()==0){
+                        ivLock.setImageResource(R.drawable.ic_camera_record_unlock);
+                    }else {
+                        ivLock.setImageResource(R.drawable.ic_camera_record_unlock_cover);
+                    }
                 }
                 break;
             case MotionEvent.ACTION_UP:
