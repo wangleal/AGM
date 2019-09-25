@@ -17,6 +17,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import wang.leal.moment.R;
+import wang.leal.moment.editor.EditorView;
 import wang.leal.moment.recorder.AudioFormat;
 import wang.leal.moment.recorder.VideoFormat;
 import wang.leal.moment.recorder.VideoRecorder;
@@ -32,6 +33,7 @@ public class CameraView extends ConstraintLayout {
     private CoverAdapter coverAdapter;
     private boolean isLock = false;
     private ImageView ivFocus;
+    private EditorView editorView;
     public CameraView(Context context) {
         super(context);
         initView();
@@ -54,9 +56,9 @@ public class CameraView extends ConstraintLayout {
         cameraRender = new CameraRender(textureView);
         videoRecorder = new VideoRecorder(getContext(), cameraRender);
         videoRecorder.setCallback(videoPath -> {
-            if (this.callback != null&&coverAdapter!=null&&vpCover!=null) {
+            if (coverAdapter!=null&&vpCover!=null) {
                 int resourceId = coverAdapter.getResourceId(vpCover.getCurrentItem());
-                this.callback.onRecordComplete(videoPath,BitmapFactory.decodeResource(getResources(),resourceId));
+                recordComplete(videoPath,BitmapFactory.decodeResource(getResources(),resourceId));
             }
         });
         ivLock = findViewById(R.id.iv_lock);
@@ -67,6 +69,7 @@ public class CameraView extends ConstraintLayout {
         coverAdapter = new CoverAdapter();
         vpCover.setAdapter(coverAdapter);
         ivFocus = findViewById(R.id.iv_focus);
+        editorView = findViewById(R.id.ev_editor);
     }
 
     public void startCamera() {
@@ -85,6 +88,9 @@ public class CameraView extends ConstraintLayout {
         if (cameraRender != null) {
             cameraRender.release();
         }
+        if (editorView!=null){
+            editorView.release();
+        }
     }
 
     private boolean isStartRecord;
@@ -92,7 +98,6 @@ public class CameraView extends ConstraintLayout {
 
     private void startRecord() {
         isStartRecord = true;
-        Log.e("Moment", "start record");
         if (videoRecorder != null) {
             videoRecorder.startRecord(VideoFormat.HW720, AudioFormat.SINGLE_CHANNEL_44100);
         }
@@ -105,7 +110,6 @@ public class CameraView extends ConstraintLayout {
 
     private void stopRecord() {
         isStartRecord = false;
-        Log.e("Moment", "stop record");
         if (videoRecorder != null) {
             videoRecorder.stopRecord();
         }
@@ -117,12 +121,11 @@ public class CameraView extends ConstraintLayout {
     }
 
     private void tackPhoto() {
-        Log.e("Moment", "tack photo");
         if (cameraRender != null) {
             cameraRender.takePhoto(bitmap -> {
-                if (callback != null&&vpCover!=null&&coverAdapter!=null) {
+                if (vpCover!=null&&coverAdapter!=null) {
                     int resourceId = coverAdapter.getResourceId(vpCover.getCurrentItem());
-                    callback.onPhotoComplete(bitmap,BitmapFactory.decodeResource(getResources(),resourceId));
+                    photoComplete(bitmap,BitmapFactory.decodeResource(getResources(),resourceId));
                 }
                 if (progressView != null) {
                     progressView.showDefault();
@@ -130,6 +133,33 @@ public class CameraView extends ConstraintLayout {
             });
         }
 
+    }
+
+    private void photoComplete(Bitmap bitmap,Bitmap coverBitmap) {
+        post(() -> {
+            if (editorView!=null){
+                editorView.setVisibility(View.VISIBLE);
+                editorView.showPhoto(bitmap,coverBitmap);
+            }
+        });
+    }
+
+    private void recordComplete(String filePath,Bitmap coverBitmap) {
+        post(() -> {
+            if (editorView!=null){
+                editorView.setVisibility(View.VISIBLE);
+                editorView.startPlay(filePath,coverBitmap);
+            }
+        });
+    }
+
+    public boolean back(){
+        if (editorView.getVisibility()==View.VISIBLE){
+            editorView.stopPlay();
+            editorView.setVisibility(View.GONE);
+            return true;
+        }
+        return false;
     }
 
     private float oldDist = 1f;
@@ -302,16 +332,5 @@ public class CameraView extends ConstraintLayout {
         float x = event.getX(count - 2) - event.getX(count - 1);
         float y = event.getY(count - 2) - event.getY(count - 1);
         return (float) Math.sqrt(x * x + y * y);
-    }
-
-    private Callback callback;
-
-    public void setCallback(Callback callback) {
-        this.callback = callback;
-    }
-
-    public interface Callback {
-        void onPhotoComplete(Bitmap bitmap,Bitmap coverBitmap);
-        void onRecordComplete(String filePath,Bitmap coverBitmap);
     }
 }

@@ -2,7 +2,6 @@ package wang.leal.agm.moment;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -14,11 +13,9 @@ import androidx.core.content.ContextCompat;
 
 import wang.leal.agm.R;
 import wang.leal.moment.camera.CameraView;
-import wang.leal.moment.editor.EditorView;
 
 public class MomentActivity extends AppCompatActivity {
     private  CameraView cameraView;
-    private  EditorView editorView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,28 +35,7 @@ public class MomentActivity extends AppCompatActivity {
     private void initView(){
         cameraView = findViewById(R.id.cv_moment_camera);
         requestPermission();
-        editorView = findViewById(R.id.ev_moment_play);
-        cameraView.setCallback(new CameraView.Callback() {
-            @Override
-            public void onPhotoComplete(Bitmap bitmap,Bitmap coverBitmap) {
-                cameraView.post(() -> {
-                    if (editorView!=null){
-                        editorView.setVisibility(View.VISIBLE);
-                        editorView.showPhoto(bitmap,coverBitmap);
-                    }
-                });
-            }
 
-            @Override
-            public void onRecordComplete(String filePath,Bitmap coverBitmap) {
-                cameraView.post(() -> {
-                    if (editorView!=null){
-                        editorView.setVisibility(View.VISIBLE);
-                        editorView.startPlay(filePath,coverBitmap);
-                    }
-                });
-            }
-        });
     }
 
     private void requestPermission() {
@@ -113,10 +89,7 @@ public class MomentActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (editorView.getVisibility()==View.VISIBLE){
-            editorView.stopPlay();
-            editorView.setVisibility(View.GONE);
-        }else {
+        if (!cameraView.back()){
             super.onBackPressed();
         }
     }
@@ -126,9 +99,6 @@ public class MomentActivity extends AppCompatActivity {
         super.onDestroy();
         if (cameraView!=null){
             cameraView.closeCamera();
-        }
-        if (editorView!=null){
-            editorView.release();
         }
     }
 }
