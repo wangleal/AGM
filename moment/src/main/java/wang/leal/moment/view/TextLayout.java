@@ -36,7 +36,7 @@ public class TextLayout extends ConstraintLayout {
 
     private void initView(){
         LayoutInflater.from(getContext()).inflate(R.layout.view_moment_editor_text_layout,this);
-        ivSave = findViewById(R.id.iv_save);
+        ivSave = findViewById(R.id.iv_save_text);
         ivSave.setOnClickListener(v -> {
             if (dragText!=null){
                 dragText.textLayoutClickOut();

@@ -19,7 +19,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.VideoView;
 
@@ -32,7 +31,6 @@ import java.io.IOException;
 import wang.leal.moment.R;
 import wang.leal.moment.recorder.AudioFormat;
 import wang.leal.moment.recorder.VideoFormat;
-import wang.leal.moment.transcoder.ImageTranscoder;
 import wang.leal.moment.transcoder.MediaTranscoder;
 import wang.leal.moment.transcoder.format.MediaFormatStrategyPresets;
 import wang.leal.moment.view.TextLayout;
@@ -41,10 +39,12 @@ public class EditorView extends ConstraintLayout {
 
     private VideoView videoView;
     private ImageView ivPhoto;
-    private Button btSave;
+    private ImageView ivSave;
     private ImageView ivSend;
+    private ImageView ivBack;
     private TextLayout textLayout;
     private Bitmap coverBitmap;
+    private ImageView ivText;
 
     public EditorView(Context context) {
         super(context);
@@ -105,16 +105,28 @@ public class EditorView extends ConstraintLayout {
         videoView.setOnClickListener(v -> showEdit());
         ivPhoto.setOnClickListener(v -> showEdit());
         ivSend = findViewById(R.id.iv_send);
-        btSave = findViewById(R.id.bt_save);
-        btSave.setOnClickListener(v -> {
+        ivSend.setOnClickListener(v -> sendToFriend());
+        ivSave = findViewById(R.id.iv_save_media);
+        ivSave.setOnClickListener(v -> {
             if (ivPhoto.getVisibility()==VISIBLE){
                 savePhoto();
             }else {
                 transcoder();
             }
         });
+        ivBack = findViewById(R.id.iv_back);
+        ivBack.setOnClickListener(v -> {
+            stopPlay();
+            setVisibility(GONE);
+        });
         textLayout = findViewById(R.id.tl_text_layout);
-        findViewById(R.id.iv_text).setOnClickListener(v -> showEdit());
+        ivText = findViewById(R.id.iv_text);
+        ivText.setOnClickListener(v -> showEdit());
+        setOnClickListener(v -> {});
+    }
+
+    private void sendToFriend(){
+
     }
 
     private void showEdit(){
@@ -125,23 +137,25 @@ public class EditorView extends ConstraintLayout {
 
     private void showView(){
         ivSend.setVisibility(VISIBLE);
-        btSave.setVisibility(VISIBLE);
+        ivSave.setVisibility(VISIBLE);
         textLayout.showCover(coverBitmap);
     }
 
     public void showPhoto(Bitmap bitmap,Bitmap coverBitmap){
         this.coverBitmap = coverBitmap;
+        showMenu();
         ivPhoto.setVisibility(VISIBLE);
-        ivPhoto.setImageBitmap(ImageTranscoder.mosaic(getContext(),bitmap));
+        ivPhoto.setImageBitmap(bitmap);
         showView();
     }
 
     private String filePath;
     public void startPlay(String filePath,Bitmap coverBitmap) {
         this.coverBitmap = coverBitmap;
+        showMenu();
         ivPhoto.setVisibility(GONE);
         ivSend.setVisibility(GONE);
-        btSave.setVisibility(GONE);
+        ivSave.setVisibility(GONE);
         this.filePath = filePath;
         videoView.setAlpha(0);
         setBackgroundColor(Color.TRANSPARENT);
@@ -151,6 +165,22 @@ public class EditorView extends ConstraintLayout {
     public void stopPlay() {
         videoView.stopPlayback();
         videoView.pause();
+    }
+
+    private void showMenu(){
+        if(coverBitmap==null){
+            ivText.setImageResource(R.drawable.ic_camera_editor_text);
+            ivBack.setImageResource(R.drawable.ic_camera_editor_back);
+            ivSave.setImageResource(R.drawable.ic_camera_editor_save);
+            ivSave.setTag(0);
+            ivSend.setImageResource(R.drawable.ic_camera_editor_send);
+        }else {
+            ivText.setImageResource(R.drawable.ic_camera_editor_text_cover);
+            ivBack.setImageResource(R.drawable.ic_camera_editor_back_cover);
+            ivSave.setImageResource(R.drawable.ic_camera_editor_save_cover);
+            ivSave.setTag(1);
+            ivSend.setImageResource(R.drawable.ic_camera_editor_send_cover);
+        }
     }
 
     private void savePhoto(){
@@ -194,11 +224,20 @@ public class EditorView extends ConstraintLayout {
                     fos.flush();
                     fos.close();
                     insertPhotoToMediaStore(photoFile);
+                    post(() -> showSaveSuccess());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }.start();
+    }
+
+    private void showSaveSuccess(){
+        if ((int)ivSave.getTag()==0){
+            ivSave.setImageResource(R.drawable.ic_camera_editor_save_success);
+        }else {
+            ivSave.setImageResource(R.drawable.ic_camera_editor_save_success_cover);
+        }
     }
 
     public static Bitmap waterMark = null;
@@ -216,6 +255,7 @@ public class EditorView extends ConstraintLayout {
                 Log.e("EditorView","transcoding took " + (SystemClock.uptimeMillis() - startTime) + "ms");
                 Log.e("EditorView","complete file:"+transcoderFile.getAbsolutePath());
                 insertVideoToMediaStore(transcoderFile);
+                post(() -> showSaveSuccess());
                 getContext().startActivity(new Intent(Intent.ACTION_VIEW)
                         .setDataAndType(Uri.parse(transcoderFile.getAbsolutePath()), "video/mp4")
                         .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION));
