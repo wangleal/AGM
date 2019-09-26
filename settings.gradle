@@ -1,2 +1,2 @@
-include ':graphics', ':multimedia', ':ffmpeg', ':webrtc', ':webrtc-compat', ':opus', ':moment'
+include ':graphics', ':multimedia', ':ffmpeg', ':webrtc', ':webrtc-compat', ':opus', ':moment', ':moment-ia'
 include ':sample'

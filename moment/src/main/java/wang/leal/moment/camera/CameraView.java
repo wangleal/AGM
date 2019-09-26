@@ -214,6 +214,9 @@ public class CameraView extends ConstraintLayout {
     }
 
     public boolean back(){
+        if (editorView.back()){
+            return true;
+        }
         if (editorView.getVisibility()==View.VISIBLE){
             editorView.stopPlay();
             editorView.setVisibility(View.GONE);
@@ -233,6 +236,9 @@ public class CameraView extends ConstraintLayout {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         switch (ev.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
+                if (editorView.getVisibility()==VISIBLE){
+                    return false;
+                }
                 return isTouchProgress(ev);
             case MotionEvent.ACTION_POINTER_DOWN:
                 int count = ev.getPointerCount();

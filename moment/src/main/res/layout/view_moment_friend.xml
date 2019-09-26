@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/iv_friend_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="57dp"
+        android:layout_marginStart="7dp"
+        android:src="@drawable/ic_camera_friend_back"
+        />
+
+    <RelativeLayout
+        android:id="@+id/cl_friend_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="92dp"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/white">
+
+        <ImageView
+            android:id="@+id/iv_photo_preview"
+            android:layout_width="25dp"
+            android:layout_height="44dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="15dp"
+            />
+        <ImageView
+            android:id="@+id/iv_friend_send"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:src="@drawable/ic_camera_editor_send_cover"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="15dp"
+            />
+        <TextView
+            android:id="@+id/tv_send_nicknames"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/iv_friend_send"
+            android:layout_toEndOf="@id/iv_photo_preview"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginTop="22dp"
+            android:lines="1"
+            android:textSize="15sp"
+            android:textColor="#333333"/>
+
+
+    </RelativeLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_friend"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/cl_friend_bottom"
+        android:layout_below="@id/iv_friend_back"
+        />
+
+</merge>

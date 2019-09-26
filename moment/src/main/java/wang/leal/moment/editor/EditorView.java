@@ -20,6 +20,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -29,8 +30,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import wang.leal.moment.R;
+import wang.leal.moment.friend.FriendView;
 import wang.leal.moment.recorder.AudioFormat;
 import wang.leal.moment.recorder.VideoFormat;
+import wang.leal.moment.transcoder.ImageTranscoder;
 import wang.leal.moment.transcoder.MediaTranscoder;
 import wang.leal.moment.transcoder.format.MediaFormatStrategyPresets;
 import wang.leal.moment.view.TextLayout;
@@ -45,6 +48,7 @@ public class EditorView extends ConstraintLayout {
     private TextLayout textLayout;
     private Bitmap coverBitmap;
     private ImageView ivText;
+    private FriendView friendView;
 
     public EditorView(Context context) {
         super(context);
@@ -126,7 +130,21 @@ public class EditorView extends ConstraintLayout {
     }
 
     private void sendToFriend(){
-
+        if (friendView==null){
+            friendView = new FriendView(getContext());
+            addView(friendView,LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
+        }
+        Bitmap bitmap = null;
+        if (ivPhoto.getVisibility()==VISIBLE){
+            bitmap = getPhoto();
+        }else {
+            bitmap = getVideoBitmap();
+        }
+        if (bitmap==null){
+            Toast.makeText(getContext(),"图片生成失败",Toast.LENGTH_LONG).show();
+            return;
+        }
+        friendView.show(ImageTranscoder.mosaic(getContext(),bitmap));
     }
 
     private void showEdit(){
@@ -185,6 +203,19 @@ public class EditorView extends ConstraintLayout {
 
     private void savePhoto(){
         try {
+            Bitmap bitmap = getPhoto();
+            if (bitmap==null){
+                Toast.makeText(getContext(),"保存失败",Toast.LENGTH_LONG).show();
+                return;
+            }
+            saveToFile(bitmap);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private Bitmap getPhoto(){
+        try {
             textLayout.setDrawingCacheEnabled(true);
             textLayout.buildDrawingCache();
             waterMark = textLayout.getDrawingCache();
@@ -201,10 +232,34 @@ public class EditorView extends ConstraintLayout {
                 canvas.save();
             }
             textLayout.destroyDrawingCache();
-            saveToFile(bitmap);
+            return bitmap;
         }catch (Exception e){
             e.printStackTrace();
         }
+        return null;
+    }
+
+    private Bitmap getVideoBitmap(){
+        try {
+            textLayout.setDrawingCacheEnabled(true);
+            textLayout.buildDrawingCache();
+            waterMark = textLayout.getDrawingCache();
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(filePath);
+
+            Bitmap sourceBitmap = retriever.getFrameAtTime();
+            Bitmap bitmap = Bitmap.createBitmap(sourceBitmap.getWidth(), sourceBitmap.getHeight(),
+                    Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            canvas.drawBitmap(sourceBitmap, 0, 0, null);
+            canvas.drawBitmap(waterMark,0,0,null);
+            canvas.save();
+            textLayout.destroyDrawingCache();
+            return bitmap;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private void saveToFile(Bitmap bitmap){
@@ -403,5 +458,13 @@ public class EditorView extends ConstraintLayout {
         if (waterMark!=null&&!waterMark.isRecycled()){
             waterMark.recycle();
         }
+    }
+
+    public boolean back(){
+        if (friendView.getVisibility()==VISIBLE){
+            friendView.gone();
+            return true;
+        }
+        return false;
     }
 }
