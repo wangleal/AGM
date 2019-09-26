@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -18,6 +19,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.comment.im.MediatorIM;
 import com.google.gson.Gson;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -25,12 +29,15 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import wang.leal.moment.R;
+import wang.leal.moment.http.FileUploader;
+import wang.leal.moment.http.UploadListener;
 
 public class FriendView extends RelativeLayout {
     private FriendAdapter friendAdapter;
     private Disposable disposable;
     private TextView tvSendNames;
     private ImageView ivPhotoPreview;
+    private boolean isSend = false;
     public FriendView(Context context) {
         super(context);
         initView();
@@ -77,10 +84,8 @@ public class FriendView extends RelativeLayout {
         recyclerView.addItemDecoration(divider);
         recyclerView.setAdapter(friendAdapter);
         findViewById(R.id.iv_friend_send).setOnClickListener(v -> {
-            List<Friend> friendList = friendAdapter.getCheckedFriends();
-            for (Friend friend:friendList){
-                MediatorIM.getIMProvider().sendMoment(new Gson().toJson(friend));
-            }
+            isSend = true;
+            sendToFriend();
             gone();
         });
         tvSendNames = findViewById(R.id.tv_send_nicknames);
@@ -91,6 +96,8 @@ public class FriendView extends RelativeLayout {
     }
 
     public void show(Bitmap bitmap){
+        isSend = false;
+        filePath = null;
         setVisibility(VISIBLE);
         if (friendAdapter!=null){
             getFriends();
@@ -114,5 +121,48 @@ public class FriendView extends RelativeLayout {
                     friendAdapter.setFriends(friends);
                     friendAdapter.notifyDataSetChanged();
                 });
+    }
+
+    private String filePath;
+    public void setFilePath(String filePath){
+        this.filePath = filePath;
+        sendToFriend();
+    }
+
+    public void sendToFriend(){
+        if (isSend&& !TextUtils.isEmpty(filePath)){
+            uploadFile();
+        }
+    }
+
+    private void uploadFile(){
+        FileUploader.upload("https://beta-static-upload.huiqu6.com/v1/moment", filePath, new UploadListener() {
+            @Override
+            public void onProgress(long progress, long total) {
+            }
+
+            @Override
+            public void onComplete(String response) {
+                String resourceId = null;
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    JSONObject dataObject = jsonObject.getJSONObject("data");
+                    resourceId = dataObject.getString("resource_id");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                List<Friend> friendList = friendAdapter.getCheckedFriends();
+                for (Friend friend:friendList){
+                    friend.resourceId = resourceId;
+                    MediatorIM.getIMProvider().sendMoment(new Gson().toJson(friend));
+                }
+                isSend = false;
+            }
+
+            @Override
+            public void onFailed(Throwable throwable) {
+            }
+        });
     }
 }

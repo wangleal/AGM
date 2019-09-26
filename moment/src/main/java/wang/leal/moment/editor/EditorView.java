@@ -145,6 +145,7 @@ public class EditorView extends ConstraintLayout {
             return;
         }
         friendView.show(ImageTranscoder.mosaic(getContext(),bitmap));
+        ivSave.performClick();
     }
 
     private void showEdit(){
@@ -279,6 +280,9 @@ public class EditorView extends ConstraintLayout {
                     fos.flush();
                     fos.close();
                     insertPhotoToMediaStore(photoFile);
+                    if (friendView!=null&&friendView.getVisibility()==VISIBLE){
+                        friendView.setFilePath(photoFile.getAbsolutePath());
+                    }
                     post(() -> showSaveSuccess());
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -310,10 +314,10 @@ public class EditorView extends ConstraintLayout {
                 Log.e("EditorView","transcoding took " + (SystemClock.uptimeMillis() - startTime) + "ms");
                 Log.e("EditorView","complete file:"+transcoderFile.getAbsolutePath());
                 insertVideoToMediaStore(transcoderFile);
+                if (friendView!=null&&friendView.getVisibility()==VISIBLE){
+                    friendView.setFilePath(transcoderFile.getAbsolutePath());
+                }
                 post(() -> showSaveSuccess());
-                getContext().startActivity(new Intent(Intent.ACTION_VIEW)
-                        .setDataAndType(Uri.parse(transcoderFile.getAbsolutePath()), "video/mp4")
-                        .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION));
             }
 
             @Override
@@ -461,7 +465,7 @@ public class EditorView extends ConstraintLayout {
     }
 
     public boolean back(){
-        if (friendView.getVisibility()==VISIBLE){
+        if (friendView!=null&&friendView.getVisibility()==VISIBLE){
             friendView.gone();
             return true;
         }

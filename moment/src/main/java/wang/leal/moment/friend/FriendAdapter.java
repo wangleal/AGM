@@ -136,6 +136,7 @@ public class FriendAdapter extends RecyclerView.Adapter {
         void showFriend(Friend friend){
             loadRound(itemView.getContext(),friend.avatar,ivAvatar);
             tvName.setText(friend.name);
+            cbCheck.setChecked(friend.isChecked);
             cbCheck.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 friend.isChecked = isChecked;
                 if (listener!=null){
