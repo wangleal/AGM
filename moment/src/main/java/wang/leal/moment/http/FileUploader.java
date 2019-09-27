@@ -21,16 +21,18 @@ import okio.Sink;
 
 public class FileUploader {
 
-    public static void upload(String url, String filePath, UploadListener uploadListener){
+    public static void upload(String url, String filePath,String fileType,String mosaicPath,UploadListener uploadListener){
         OkHttpClient okHttpClient = new OkHttpClient();
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM);
 
         File file = new File(filePath);
         RequestBody requestFile =
-                RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        builder.addFormDataPart("file", file.getName(), new FileRequestBody(requestFile, uploadListener));
-
+                RequestBody.create(MediaType.parse(fileType), file);
+        builder.addFormDataPart("open_file", file.getName(), new FileRequestBody(requestFile, uploadListener));
+        File mosaicFile = new File(mosaicPath);
+        RequestBody requestMosaic = RequestBody.create(MediaType.parse("image/jpeg"),mosaicFile);
+        builder.addFormDataPart("lock_file", file.getName(), requestMosaic);
         RequestBody requestBody = builder.build();
 
         Request request = new Request.Builder()

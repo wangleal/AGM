@@ -281,7 +281,7 @@ public class EditorView extends ConstraintLayout {
                     fos.close();
                     insertPhotoToMediaStore(photoFile);
                     if (friendView!=null&&friendView.getVisibility()==VISIBLE){
-                        friendView.setFilePath(photoFile.getAbsolutePath());
+                        friendView.setFilePath(photoFile.getAbsolutePath(),"image/jpeg");
                     }
                     post(() -> showSaveSuccess());
                 } catch (IOException e) {
@@ -315,7 +315,7 @@ public class EditorView extends ConstraintLayout {
                 Log.e("EditorView","complete file:"+transcoderFile.getAbsolutePath());
                 insertVideoToMediaStore(transcoderFile);
                 if (friendView!=null&&friendView.getVisibility()==VISIBLE){
-                    friendView.setFilePath(transcoderFile.getAbsolutePath());
+                    friendView.setFilePath(transcoderFile.getAbsolutePath(),"video/mp4");
                 }
                 post(() -> showSaveSuccess());
             }
