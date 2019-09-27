@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.comment.im.MediatorIM;
+import com.moment.im.MediatorIM;
 import com.google.gson.Gson;
 
 import org.json.JSONException;

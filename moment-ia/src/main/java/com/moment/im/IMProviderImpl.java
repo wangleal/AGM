@@ -1,4 +1,4 @@
-package com.comment.im;
+package com.moment.im;
 
 import android.content.Context;
 import android.util.Log;

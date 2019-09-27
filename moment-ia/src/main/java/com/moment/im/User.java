@@ -1,4 +1,4 @@
-package com.comment.im;
+package com.moment.im;
 
 public class User {
     public String id;

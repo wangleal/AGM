@@ -1,4 +1,4 @@
-package com.comment.im;
+package com.moment.im;
 
 import com.alibaba.android.arouter.launcher.ARouter;
 
