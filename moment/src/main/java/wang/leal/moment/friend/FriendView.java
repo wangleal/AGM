@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.media.MediaMetadataRetriever;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.util.AttributeSet;
@@ -12,6 +13,7 @@ import android.view.LayoutInflater;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -28,6 +30,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import io.liuliu.http.HttpException;
+import io.liuliu.http.NetObserver;
+import io.liuliu.http.RetrofitFactory;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -214,12 +219,7 @@ public class FriendView extends RelativeLayout {
                         openSourceId = dataObject.getString("open_resource_id");
                         lockSourceId = dataObject.getString("lock_resource_id");
 
-                        List<Friend> friendList = friendAdapter.getCheckedFriends();
-                        for (Friend friend:friendList){
-                            friend.openResourceId = openSourceId;
-                            friend.lockResourceId = lockSourceId;
-                            MediatorIM.getIMProvider().sendMoment(new Gson().toJson(friend));
-                        }
+                        createMoment(openSourceId,lockSourceId,fileType);
                     }else {
                         //failed
                     }
@@ -234,5 +234,44 @@ public class FriendView extends RelativeLayout {
                 Log.e("FriendView","error:"+throwable.getMessage());
             }
         });
+    }
+
+    private void createMoment(String openSourceId,String lockSourceId,String fileType){
+        if (TextUtils.isEmpty(filePath)){
+            return;
+        }
+        String time  ="0";
+        if (fileType.equals("video/mp4")){
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(filePath);
+            // 取得视频的长度(单位为毫秒)
+            time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        }
+        RetrofitFactory.getRetrofit("https://beta-moment.huiqu6.com").create(MomentApi.class)
+                .createMoment(lockSourceId,openSourceId,"",fileType,"image/mp4",Long.parseLong(time))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new NetObserver<String>() {
+                    @Override
+                    public void onError(HttpException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getContext(),"创建Moment失败",Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                        List<Friend> friendList = friendAdapter.getCheckedFriends();
+                        for (Friend friend:friendList){
+                            friend.openResourceId = openSourceId;
+                            friend.lockResourceId = lockSourceId;
+                            MediatorIM.getIMProvider().sendMoment(new Gson().toJson(friend));
+                        }
+                    }
+                });
     }
 }

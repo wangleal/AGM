@@ -20,6 +20,7 @@ import wang.leal.moment.editor.EditorView;
 import wang.leal.moment.recorder.AudioFormat;
 import wang.leal.moment.recorder.VideoFormat;
 import wang.leal.moment.recorder.VideoRecorder;
+import wang.leal.moment.utils.ViewUtil;
 import wang.leal.moment.view.ProgressView;
 
 public class CameraView extends ConstraintLayout {
@@ -116,11 +117,15 @@ public class CameraView extends ConstraintLayout {
     }
 
     private void openFriend(){
-
+        if (listener!=null){
+            listener.onAction(0,null);
+        }
     }
 
     private void openMessage(){
-
+        if (listener!=null){
+            listener.onAction(1,null);
+        }
     }
 
     public void startCamera() {
@@ -239,7 +244,7 @@ public class CameraView extends ConstraintLayout {
                 if (editorView.getVisibility()==VISIBLE){
                     return false;
                 }
-                return isTouchProgress(ev);
+                return isTouchView(ev,progressView);
             case MotionEvent.ACTION_POINTER_DOWN:
                 int count = ev.getPointerCount();
                 if (count>1){
@@ -257,7 +262,7 @@ public class CameraView extends ConstraintLayout {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-                if (isTouchProgress(event)) {
+                if (isTouchView(event,progressView)) {
                     if (isLock) {//锁住之后，再次点击action view，意思是结束
                         isLockPress = true;
                     } else {
@@ -280,7 +285,7 @@ public class CameraView extends ConstraintLayout {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (!isTouchProgress(event)) {
+                if (!isTouchView(event,progressView)) {
                     if (count > 1) {
                         float newDist = getFingerSpacing(event);
                         if (cameraRender != null) {
@@ -307,7 +312,7 @@ public class CameraView extends ConstraintLayout {
                         }
                     }
                 }
-                if (ivLock.getVisibility() == VISIBLE && isTouchLock(event)) {//检测是否滑中lock
+                if (ivLock.getVisibility() == VISIBLE && isTouchView(event,ivLock)) {//检测是否滑中lock
                     isLock = true;
                     if (vpCover.getCurrentItem()==0){
                         ivLock.setImageResource(R.drawable.ic_camera_record_lock);
@@ -327,7 +332,7 @@ public class CameraView extends ConstraintLayout {
             case MotionEvent.ACTION_POINTER_UP:
                 if (isLock) {
                     if (isLockPress) {
-                        if (isTouchProgress(event)) {
+                        if (isTouchView(event,progressView)) {
                             if (progressView != null) {
                                 progressView.showDefault();
                             }
@@ -368,38 +373,14 @@ public class CameraView extends ConstraintLayout {
         return true;
     }
 
-    private boolean isTouchProgress(MotionEvent event) {
+    private boolean isTouchView(MotionEvent event,View view){
         float rawX, rawY;
         final int[] location = {0, 0};
         final int actionIndex = event.getAction() >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
         getLocationOnScreen(location);
         rawX = (int) event.getX(actionIndex) + location[0];
         rawY = (int) event.getY(actionIndex) + location[1];
-        return isTouchPointInView(rawX, rawY, progressView);
-    }
-
-    private boolean isTouchLock(MotionEvent event) {
-        float rawX, rawY;
-        final int[] location = {0, 0};
-        final int actionIndex = event.getAction() >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-        getLocationOnScreen(location);
-        rawX = (int) event.getX(actionIndex) + location[0];
-        rawY = (int) event.getY(actionIndex) + location[1];
-        return isTouchPointInView(rawX, rawY, ivLock);
-    }
-
-    private boolean isTouchPointInView(float x, float y, View view) {
-        if (view == null) {
-            return false;
-        }
-        int[] location = new int[2];
-        view.getLocationOnScreen(location);
-        int left = location[0];
-        int top = location[1];
-        int right = left + view.getMeasuredWidth();
-        int bottom = top + view.getMeasuredHeight();
-        return y >= top && y <= bottom && x >= left
-                && x <= right;
+        return ViewUtil.isTouchPointInView(rawX, rawY, view);
     }
 
     private static float getFingerSpacing(MotionEvent event) {
@@ -410,5 +391,19 @@ public class CameraView extends ConstraintLayout {
         float x = event.getX(count - 2) - event.getX(count - 1);
         float y = event.getY(count - 2) - event.getY(count - 1);
         return (float) Math.sqrt(x * x + y * y);
+    }
+
+    private Listener listener;
+    public void setListener(Listener listener){
+        this.listener = listener;
+    }
+
+    public interface Listener{
+        /**
+         *
+         * @param what 0：朋友按钮点击；1：消息按钮点击
+         * @param object param
+         */
+        void onAction(int what,Object object);
     }
 }
