@@ -251,7 +251,7 @@ public class FriendView extends RelativeLayout {
                 .createMoment(lockSourceId,openSourceId,"",fileType,"image/mp4",Long.parseLong(time))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new NetObserver<String>() {
+                .subscribe(new NetObserver<Object>() {
                     @Override
                     public void onError(HttpException e) {
                         e.printStackTrace();
@@ -264,12 +264,26 @@ public class FriendView extends RelativeLayout {
                     }
 
                     @Override
-                    public void onNext(String s) {
-                        List<Friend> friendList = friendAdapter.getCheckedFriends();
-                        for (Friend friend:friendList){
-                            friend.openResourceId = openSourceId;
-                            friend.lockResourceId = lockSourceId;
-                            MediatorIM.getIMProvider().sendMoment(new Gson().toJson(friend));
+                    public void onNext(Object object) {
+                        Gson gson = new Gson();
+                        if (object!=null){
+                            try {
+                                String json = gson.toJson(object);
+                                JSONObject jsonObject = new JSONObject(json);
+                                int code = jsonObject.getInt("error_code");
+                                if (code==0){
+                                    JSONObject dataObject = jsonObject.getJSONObject("data");
+                                    String data = dataObject.toString();
+                                    List<Friend> friendList = friendAdapter.getCheckedFriends();
+                                    for (Friend friend:friendList){
+                                        friend.openResourceId = openSourceId;
+                                        friend.lockResourceId = lockSourceId;
+                                        MediatorIM.getIMProvider().sendMoment(data);
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 });
