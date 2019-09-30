@@ -273,11 +273,10 @@ public class FriendView extends RelativeLayout {
                                 int code = jsonObject.getInt("error_code");
                                 if (code==0){
                                     JSONObject dataObject = jsonObject.getJSONObject("data");
-                                    String data = dataObject.toString();
                                     List<Friend> friendList = friendAdapter.getCheckedFriends();
                                     for (Friend friend:friendList){
-                                        friend.openResourceId = openSourceId;
-                                        friend.lockResourceId = lockSourceId;
+                                        dataObject.put("to_uid",friend.id);
+                                        String data = dataObject.toString();
                                         MediatorIM.getIMProvider().sendMoment(data);
                                     }
                                 }
