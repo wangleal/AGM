@@ -127,6 +127,39 @@ public class EditorView extends ConstraintLayout {
         ivText = findViewById(R.id.iv_text);
         ivText.setOnClickListener(v -> showEdit());
         setOnClickListener(v -> {});
+        textLayout.setCallback(new TextLayout.Callback() {
+            @Override
+            public void onShow() {
+                if (ivSave!=null){
+                    ivSave.setVisibility(VISIBLE);
+                }
+                if (ivSend!=null){
+                    ivSend.setVisibility(VISIBLE);
+                }
+                if (ivBack!=null){
+                    ivBack.setVisibility(VISIBLE);
+                }
+                if (ivText!=null){
+                    ivText.setVisibility(VISIBLE);
+                }
+            }
+
+            @Override
+            public void onGone() {
+                if (ivSave!=null){
+                    ivSave.setVisibility(INVISIBLE);
+                }
+                if (ivSend!=null){
+                    ivSend.setVisibility(INVISIBLE);
+                }
+                if (ivBack!=null){
+                    ivBack.setVisibility(INVISIBLE);
+                }
+                if (ivText!=null){
+                    ivText.setVisibility(INVISIBLE);
+                }
+            }
+        });
     }
 
     private void sendToFriend(){

@@ -3,6 +3,8 @@ package wang.leal.moment.view;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.IBinder;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -24,7 +26,6 @@ import wang.leal.moment.R;
 public class DragEditText extends ConstraintLayout {
     private DragEdit etText;
     private int lastX, lastY;
-    private int parentWidth, parentHeight;
     public DragEditText(Context context) {
         super(context);
         initView();
@@ -41,20 +42,7 @@ public class DragEditText extends ConstraintLayout {
     }
 
     private void initView(){
-        etText = new DragEdit(getContext());
-        etText.setGravity(Gravity.CENTER);
-        float textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,18,getResources().getDisplayMetrics());
-        etText.setTextSize(textSize);
-        etText.setTextColor(Color.WHITE);
-        etText.setBackground(null);
-        addView(etText, LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        etText.setGravity(Gravity.CENTER);
-        etText.setMinWidth(100);
-        setCursorDrawableColor(etText, R.drawable.shape_camera_editor_text_cursor);
-        LayoutParams etParams = (LayoutParams) etText.getLayoutParams();
-        etParams.topToTop = LayoutParams.PARENT_ID;
-        etParams.bottomToBottom = LayoutParams.PARENT_ID;
-        etText.setOnEditorActionListener((v, actionId, event) -> (event.getKeyCode()== KeyEvent.KEYCODE_ENTER));
+        addEdit();
     }
 
     public void keyBoardIsShow(int diff){
@@ -75,6 +63,7 @@ public class DragEditText extends ConstraintLayout {
         return true;
     }
 
+    private boolean isSelected = false;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
@@ -83,34 +72,32 @@ public class DragEditText extends ConstraintLayout {
                 lastY = (int) event.getRawY();
                 break;
             case MotionEvent.ACTION_MOVE:
-                int deltaX = (int) event.getRawX() - lastX;
-                int deltaY = (int) event.getRawY() - lastY;
                 if (etText.isFocused()){
                     return super.onTouchEvent(event);
                 }else {
-                    if (parentWidth == 0) {
-                        ViewGroup mViewGroup = (ViewGroup) getParent();
-                        parentWidth = mViewGroup.getWidth();
-                        parentHeight = mViewGroup.getHeight();
+                    int deltaX = (int) event.getRawX() - lastX;
+                    int deltaY = (int) event.getRawY() - lastY;
+//                    offsetLeftAndRight(deltaX);
+//                    offsetTopAndBottom(deltaY);
+                    float x = getX() + deltaX;
+                    float y = getY() + deltaY;
+                    moveEdit(x,y);
+                    if (callback!=null){
+                        callback.onShow();
+                        isSelected = callback.isSelected(event.getRawX(),event.getRawY());
                     }
-
-                    if ((getX()+deltaX)<0||getRight()+deltaX>parentWidth){
-                        deltaX = 0;
-                    }
-                    if ((getY()+deltaY)<0||getBottom()+deltaY>parentHeight){
-                        deltaY = 0;
-                    }
-                    offsetLeftAndRight(deltaX);
-                    offsetTopAndBottom(deltaY);
-                    if (deltaX!=0){
-                        lastX = (int) event.getRawX();
-                    }
-                    if (deltaY!=0){
-                        lastY = (int) event.getRawY();
-                    }
+                    lastX = (int) event.getRawX();
+                    lastY = (int) event.getRawY();
                 }
                 break;
             case MotionEvent.ACTION_UP:
+                if (callback!=null){
+                    callback.onGone();
+                    if (isSelected){
+                        callback.onDelete();
+                        isSelected = false;
+                    }
+                }
                 break;
         }
         return super.onTouchEvent(event);
@@ -197,5 +184,73 @@ public class DragEditText extends ConstraintLayout {
         if (etText!=null){
             etText.setTextSize(textSize);
         }
+    }
+
+    private void addEdit(){
+        if (etText!=null){
+            removeView(etText);
+        }
+        etText = new DragEdit(getContext());
+        float textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,18,getResources().getDisplayMetrics());
+        etText.setTextSize(textSize);
+        etText.setTextColor(Color.WHITE);
+        etText.setBackground(null);
+        addView(etText, LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        etText.setOnEditorActionListener((v, actionId, event) -> (event.getKeyCode()== KeyEvent.KEYCODE_ENTER));
+        etText.setGravity(Gravity.CENTER);
+        etText.setMinWidth(100);
+        setCursorDrawableColor(etText, R.drawable.shape_camera_editor_text_cursor);
+        LayoutParams etParams = (LayoutParams) etText.getLayoutParams();
+        etParams.topToTop = LayoutParams.PARENT_ID;
+        etParams.bottomToBottom = LayoutParams.PARENT_ID;
+        etParams.startToStart = LayoutParams.PARENT_ID;
+        etParams.endToEnd = LayoutParams.PARENT_ID;
+        etText.setLayoutParams(etParams);
+        etText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                moveEdit(getX(),getY());
+            }
+        });
+    }
+
+    private void moveEdit(float x,float y){
+        ViewGroup mViewGroup = (ViewGroup) getParent();
+        int parentWidth = mViewGroup.getWidth();
+        int parentHeight = mViewGroup.getHeight();
+        if (x<0){
+            x=0;
+        }
+        if (y<0){
+            y=0;
+        }
+        if ((x+etText.getWidth())>parentWidth){
+            x = parentWidth-etText.getWidth();
+        }
+        if ((y+etText.getHeight())>parentHeight){
+            y = parentHeight-etText.getHeight();
+        }
+        setX(x);
+        setY(y);
+    }
+
+    private Callback callback;
+    public void setCallback(Callback callback){
+        this.callback = callback;
+    }
+    public interface Callback{
+        void onShow();
+        void onGone();
+        boolean isSelected(float x,float y);
+        void onDelete();
     }
 }

@@ -12,12 +12,14 @@ import android.widget.RadioGroup;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import wang.leal.moment.R;
+import wang.leal.moment.utils.ViewUtil;
 
 public class TextLayout extends ConstraintLayout {
     private ImageView ivSave;
     private ConstraintLayout clBottom;
     private DragEditText dragText;
     private ImageView ivCover;
+    private ImageView ivTextDelete;
     private int rootViewVisibleHeight;
     public TextLayout(Context context) {
         super(context);
@@ -36,18 +38,19 @@ public class TextLayout extends ConstraintLayout {
 
     private void initView(){
         LayoutInflater.from(getContext()).inflate(R.layout.view_moment_editor_text_layout,this);
+        addDragEditText();
         ivSave = findViewById(R.id.iv_save_text);
         ivSave.setOnClickListener(v -> {
             if (dragText!=null){
                 dragText.textLayoutClickOut();
             }
         });
-        dragText = findViewById(R.id.det_text);
         setOnClickListener(v -> {
             if (dragText!=null){
                 dragText.textLayoutClickOut();
             }
         });
+
         getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             Rect r = new Rect();
             getWindowVisibleDisplayFrame(r);
@@ -90,6 +93,7 @@ public class TextLayout extends ConstraintLayout {
             }
         });
         ivCover = findViewById(R.id.iv_cover);
+        ivTextDelete = findViewById(R.id.iv_text_delete);
     }
 
     public void showCover(Bitmap bitmap){
@@ -123,5 +127,68 @@ public class TextLayout extends ConstraintLayout {
         if (dragText!=null){
             dragText.textLayoutClickOut();
         }
+    }
+
+    private void addDragEditText(){
+        if (dragText!=null){
+            removeView(dragText);
+        }
+        dragText = new DragEditText(getContext());
+        LayoutParams params = (LayoutParams) dragText.getLayoutParams();
+        if (params==null){
+            params = new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        }
+        params.bottomToBottom = LayoutParams.PARENT_ID;
+        params.topToTop = LayoutParams.PARENT_ID;
+        params.startToStart = LayoutParams.PARENT_ID;
+        params.endToEnd = LayoutParams.PARENT_ID;
+        addView(dragText,0,params);
+        dragText.setCallback(new DragEditText.Callback() {
+            @Override
+            public void onShow() {
+                if (ivTextDelete!=null){
+                    ivTextDelete.setImageResource(R.drawable.ic_camera_editor_text_delete);
+                    ivTextDelete.setVisibility(VISIBLE);
+                }
+                if (callback!=null){
+                    callback.onGone();
+                }
+            }
+
+            @Override
+            public void onGone() {
+                if (ivTextDelete!=null){
+                    ivTextDelete.setVisibility(INVISIBLE);
+                }
+                if (callback!=null){
+                    callback.onShow();
+                }
+            }
+
+            @Override
+            public boolean isSelected(float x, float y) {
+                if(ViewUtil.isTouchPointInView(x,y,ivTextDelete)){
+                    ivTextDelete.setImageResource(R.drawable.ic_camera_editor_text_delete_selected);
+                    ivTextDelete.setVisibility(VISIBLE);
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public void onDelete() {
+                addDragEditText();
+            }
+        });
+    }
+
+    private Callback callback;
+    public void setCallback(Callback callback){
+        this.callback = callback;
+    }
+
+    public interface Callback{
+        void onShow();
+        void onGone();
     }
 }
