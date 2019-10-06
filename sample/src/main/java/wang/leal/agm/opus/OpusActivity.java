@@ -25,7 +25,7 @@ public class OpusActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        findViewById(R.id.bt_play).setOnClickListener(v -> Opus.play(getApplicationContext(),filePath));
+        findViewById(R.id.bt_play).setOnClickListener(v -> Opus.play(getApplicationContext(),filePath,null));
         findViewById(R.id.bt_stop).setOnClickListener(v -> Opus.stopPlay(getApplicationContext()));
         findViewById(R.id.bt_record).setOnClickListener(v -> Opus.record(getApplicationContext(),filePath));
         findViewById(R.id.bt_stop_record).setOnClickListener(v -> Opus.stopRecord(getApplicationContext()));

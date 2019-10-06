@@ -6,8 +6,8 @@ public class Opus {
 
     private static final IOpusService opusService = new TopOpus();
 
-    public static void play(Context context, String filePath){
-        opusService.play(context,filePath);
+    public static void play(Context context, String filePath, IOpusService.PlayCallback playCallback){
+        opusService.play(context,filePath, playCallback);
     }
     public static void pause(Context context){
         opusService.pause(context);
