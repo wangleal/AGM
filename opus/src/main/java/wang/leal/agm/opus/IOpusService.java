@@ -11,7 +11,5 @@ interface IOpusService {
     void record(Context context,String filePath);
     void stopRecord(Context context);
 
-    interface PlayCallback{
-        void onPlayComplete();
-    }
+
 }
