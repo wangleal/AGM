@@ -9,4 +9,5 @@
     <string name="stop">stop</string>
     <string name="record">record</string>
     <string name="stop_record">stop_record</string>
+    <string name="camera">Camera</string>
 </resources>
