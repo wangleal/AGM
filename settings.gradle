@@ -1,3 +1,3 @@
-include ':graphics', ':multimedia', ':ffmpeg', ':webrtc', ':webrtc-compat', ':opus', ':moment', ':moment-ia', ':camera'
+include ':graphics', ':multimedia', ':ffmpeg', ':webrtc', ':webrtc-compat', ':opus', ':camera'
 //, ':moment', ':moment-ia'
 include ':sample'

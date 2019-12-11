@@ -35,7 +35,6 @@ dependencies {
     implementation project(':multimedia')
     implementation project(':ffmpeg')
     implementation project(':opus')
-    implementation project(':moment')
     implementation project(':camera')
     implementation 'com.google.android.material:material:1.0.0'
 }
