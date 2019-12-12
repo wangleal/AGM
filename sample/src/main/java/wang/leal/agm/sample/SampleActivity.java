@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import wang.leal.agm.R;
 import wang.leal.agm.camera.CameraActivity;
 import wang.leal.agm.ffmpeg.FFmpegActivity;
-import wang.leal.agm.moment.MomentActivity;
 import wang.leal.agm.opus.OpusActivity;
 
 public class SampleActivity extends AppCompatActivity {
@@ -24,7 +23,6 @@ public class SampleActivity extends AppCompatActivity {
     private void initView(){
         findViewById(R.id.bt_ffmpeg).setOnClickListener(v->startActivity(new Intent(this, FFmpegActivity.class)));
         findViewById(R.id.bt_opus).setOnClickListener(v->startActivity(new Intent(this, OpusActivity.class)));
-        findViewById(R.id.bt_moment).setOnClickListener(v -> startActivity(new Intent(this, MomentActivity.class)));
         findViewById(R.id.bt_camera).setOnClickListener(v -> startActivity(new Intent(this, CameraActivity.class)));
     }
 }

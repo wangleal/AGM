@@ -6,6 +6,6 @@ public class FFmpeg {
         System.loadLibrary("ffmpeg");
     }
 
-    public static native int execute(String... commands);
+    public static native String execute(String... commands);
 
 }

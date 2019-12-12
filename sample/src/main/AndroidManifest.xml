@@ -31,7 +31,6 @@
         <activity android:name=".graphics.SurfaceViewGLWrapperActivity" />
         <activity android:name=".ffmpeg.FFmpegActivity" />
         <activity android:name=".opus.OpusActivity" />
-        <activity android:name=".moment.MomentActivity" />
         <activity android:name=".camera.CameraActivity" />
     </application>
 </manifest>
