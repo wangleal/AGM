@@ -45,6 +45,7 @@
 #include "libavutil/threadmessage.h"
 
 #include "libswresample/swresample.h"
+#include "FFmpegCMD.h"
 
 #define VSYNC_AUTO       -1
 #define VSYNC_PASSTHROUGH 0
@@ -664,5 +665,7 @@ int hw_device_setup_for_decode(InputStream *ist);
 int hw_device_setup_for_encode(OutputStream *ost);
 
 int hwaccel_decode_init(AVCodecContext *avctx);
+
+int cmd(int argc, char **argv);
 
 #endif /* FFTOOLS_FFMPEG_H */
